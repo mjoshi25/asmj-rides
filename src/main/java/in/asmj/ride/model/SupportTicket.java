@@ -1,0 +1,6 @@
+package in.asmj.ride.model;
+import org.springframework.data.annotation.Id;import org.springframework.data.mongodb.core.mapping.Document;import java.time.Instant;
+@Document("support_tickets") public class SupportTicket {
+ @Id private String id; private String userId,userName,rideId,category,subject,message,status="OPEN",adminReply; private Instant createdAt=Instant.now(),updatedAt=Instant.now();
+ public String getId(){return id;} public String getUserId(){return userId;} public void setUserId(String v){userId=v;} public String getUserName(){return userName;} public void setUserName(String v){userName=v;} public String getRideId(){return rideId;} public void setRideId(String v){rideId=v;} public String getCategory(){return category;} public void setCategory(String v){category=v;} public String getSubject(){return subject;} public void setSubject(String v){subject=v;} public String getMessage(){return message;} public void setMessage(String v){message=v;} public String getStatus(){return status;} public void setStatus(String v){status=v;updatedAt=Instant.now();} public String getAdminReply(){return adminReply;} public void setAdminReply(String v){adminReply=v;updatedAt=Instant.now();} public Instant getCreatedAt(){return createdAt;} public Instant getUpdatedAt(){return updatedAt;}
+}
