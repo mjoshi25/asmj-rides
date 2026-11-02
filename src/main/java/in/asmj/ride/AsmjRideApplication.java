@@ -55,7 +55,7 @@ public class AsmjRideApplication {
             admin.setRole("ADMIN");
             admin.setStatus("APPROVED");
             admin.setMobileVerified(true);
-            admin.setAvailable(false);
+            admin.setAvailable(true);
 
             repository.save(admin);
 
