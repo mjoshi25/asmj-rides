@@ -18,9 +18,14 @@ public class SecurityConfig {
     @Bean UserDetailsService details(UserAccountRepository repository){
         return email -> {
             var user=repository.findByEmailIgnoreCase(email).orElseThrow(()->new UsernameNotFoundException("Account not found"));
-            if(!user.isMobileVerified()) throw new DisabledException("Verify your mobile first");
-            // Pending partners can sign in to complete onboarding uploads. Ride actions still require approval.
-            if("SUSPENDED".equals(user.getStatus())) throw new DisabledException("Account suspended");
+            
+if (!"ADMIN".equals(user.getRole()) && !user.isMobileVerified()) {
+    throw new DisabledException("Verify your mobile first");
+}
+
+if ("SUSPENDED".equals(user.getStatus())) {
+    throw new DisabledException("Account suspended");
+}
             return User.withUsername(user.getEmail()).password(user.getPasswordHash()).roles(user.getRole()).build();
         };
     }
