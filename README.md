@@ -1,4 +1,4 @@
-# ASMJ Ride — Integrated Phases 1–7 + Phase 8 deployment preparation
+# ASMJ Ride — Integrated Phases 1–8 + Cloudinary upload workflows
 
 **Stack:** Java 17, Spring Boot 3.3.5, Thymeleaf, Spring Security, MongoDB Atlas, Docker, Render.
 
@@ -14,6 +14,7 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 - **Phase 6:** admin users, rides, fare rules, payments, operations totals and status management.
 - **Phase 7:** ratings, support tickets, SOS/safety and lost-item report records.
 - **Phase 8:** Render Blueprint, Docker hardening, production profile, health endpoint and deployment runbook.
+- **Cloudinary upload update:** profile photos; partner identity/licence/business documents; multiple vehicle photos with add/remove during edit; RC/insurance/permit/fitness/PUC files; UPI payment proof; support and SOS evidence attachments; admin document review with per-file verification status.
 
 ## Deploy to Render
 
@@ -45,8 +46,12 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 | `ADMIN_PASSWORD` | Unique strong password, minimum 12 characters |
 | `OTP_DEV_MODE` | `false` |
 | `SESSION_COOKIE_SECURE` | `true` |
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Your Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Your Cloudinary API secret (keep private) |
+| `UPLOAD_MAX_BYTES` | `8388608` (8 MB per file) |
 
-`render.yaml` marks the three secrets as `sync: false`, so enter them in Render. Do not put secret values in GitHub or the Blueprint file.
+`render.yaml` marks credential values as `sync: false`, so enter them in Render. Do not put secret values in GitHub or the Blueprint file.
 
 5. Save changes and deploy. Render builds the Docker image using the included Dockerfile. The app listens on the Render-provided `PORT` (default 8080 locally).
 6. Wait for the health check at `/actuator/health` to pass. Open the Render service URL over HTTPS.
@@ -80,20 +85,30 @@ Open `http://localhost:8080`. Local `application.properties` defaults to localho
 2. Home page loads over HTTPS and login works.
 3. Admin can open `/admin`, `/admin/operations`, `/admin/rides`, `/admin/users`, `/admin/fares`, `/payments`, `/support`.
 4. Create test customer/driver/fleet accounts only after OTP delivery is implemented or a controlled test verification is arranged.
-5. Approve a test driver and vehicle; create a test ride; accept it; test pickup OTP, trip status and fare.
-6. Test cash and manual UPI reference flows using test amounts only; verify the payment status and commission ledger.
-7. Test ratings, support ticket, SOS test report, admin response and account suspension.
-8. Review Render logs for startup exceptions, MongoDB connection failures, 4xx/5xx errors and unexpected sensitive data. Never share unredacted logs containing credentials or personal information.
+5. Set Cloudinary environment variables, then upload a profile photo, partner ID/licence, multiple vehicle images, RC/insurance, UPI proof and support attachments. Confirm each asset appears in the relevant dashboard.
+6. Open `/admin/uploads`, verify the required partner and vehicle documents, and confirm approval is blocked before verification and permitted after all required documents are verified.
+7. Approve a test driver and vehicle; create a test ride; accept it; test pickup OTP, trip status and fare.
+8. Test cash and manual UPI reference flows using test amounts only; verify the payment status and commission ledger.
+9. Test ratings, support ticket, SOS test report, admin response and account suspension.
+10. Review Render logs for startup exceptions, MongoDB connection failures, 4xx/5xx errors and unexpected sensitive data. Never share unredacted logs containing credentials or personal information.
+
+## Cloudinary upload workflow
+
+- Set all three Cloudinary credentials in Render. The app does not need a local `.env` file.
+- Public image uploads are used for profile and vehicle photos. Identity, licence, vehicle documents, payment proofs and support/safety attachments are uploaded as Cloudinary authenticated assets.
+- The app checks the logged-in user's ownership or admin role, retrieves authenticated Cloudinary files server-side, and streams them through the protected `/files/...` route with private/no-store headers. The signed Cloudinary URL is not exposed to the browser.
+- Allowed formats: JPG, PNG, WEBP and PDF. Maximum file size defaults to 8 MB; support/safety submissions allow up to five attachments each.
+- Admin: open `/admin/uploads` to view partner/vehicle documents, payment proofs and attachments. Mark each required document `VERIFIED` before approving the partner or vehicle.
+- Driver approval requires verified `IDENTITY` and `DRIVING_LICENCE`. Fleet-owner approval requires verified `IDENTITY` and `BUSINESS_REGISTRATION`. Vehicle approval requires at least one vehicle photo and verified `RC` and `INSURANCE`; `PERMIT`, `FITNESS` and `PUC` can also be uploaded and reviewed as applicable.
+- Pending partners can sign in after mobile verification to complete their onboarding uploads. Ride acceptance remains blocked until the partner and vehicle are approved.
 
 ## Important limitations — not production-ready
-
 - **OTP:** no SMS provider, delivery, rate limiting or robust brute-force protection. OTP display is only for local development and must remain disabled on Render.
-- **Documents:** Cloudinary is present as a dependency but private driver/vehicle document upload, signed access, validation and malware scanning are not implemented.
 - **Dispatch/scheduling:** no production proximity/radius dispatch, background scheduled ride reminders, automatic future assignment or concurrency/locking guarantee.
 - **GPS/maps:** location works only while the driver's browser page remains open; no background tracking, routing/map matching or independently verified distance calculation.
-- **Payments:** UPI is manual reference verification; no payment gateway, QR, screenshot upload, automatic bank reconciliation, actual payout or automatic refund.
+- **Payments:** UPI is manual reference and screenshot submission for admin review; no payment gateway, QR, automatic bank reconciliation, actual payout or automatic refund.
 - **Safety:** SOS creates an internal report only; it does not call emergency services or notify responders. Immediate danger requires contacting local emergency services directly.
-- **Security/operations:** no independent penetration test, rate limits, comprehensive audit/event trail, fraud detection, operational alerting, backup/restore drill or privacy-retention workflow. Review role authorization and CSRF behavior during end-to-end testing.
+- **Security/operations:** no independent penetration test, malware scanning, comprehensive audit/event trail, fraud detection, operational alerting, backup/restore drill or privacy-retention workflow. Review role authorization and CSRF behavior during end-to-end testing.
 - **Testing:** a successful Docker build, Maven test suite, Atlas runtime test and full end-to-end test must be completed before public use. Do not use real payment details or identity documents during initial testing.
 
 ## Troubleshooting
