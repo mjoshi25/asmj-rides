@@ -37,7 +37,7 @@ if ("SUSPENDED".equals(user.getStatus())) {
 
     @Bean SecurityFilterChain chain(HttpSecurity http,DaoAuthenticationProvider provider)throws Exception{
         http.authenticationProvider(provider).authorizeHttpRequests(auth->auth
-            .requestMatchers("/","/register","/otp/**","/login","/css/**","/actuator/health","/actuator/health/**").permitAll()
+            .requestMatchers("/","/register","/otp/**","/login","/access-denied","/css/**","/js/**","/images/**","/favicon.ico","/manifest.webmanifest","/actuator/health","/actuator/health/**").permitAll()
             .requestMatchers("/admin","/admin/**").hasRole("ADMIN")
             .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
             .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER")
@@ -46,7 +46,9 @@ if ("SUSPENDED".equals(user.getStatus())) {
             .requestMatchers("/rides/*/accept","/rides/*/status","/rides/*/location").hasRole("DRIVER")
             .requestMatchers("/payments","/payments/**","/support","/support/**","/rides/*/review","/rides/*/sos","/rides/*/complaint").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
             .anyRequest().authenticated())
-            .formLogin(form->form.loginPage("/login").defaultSuccessUrl("/dashboard",true).permitAll())
+            .formLogin(form->form.loginPage("/login").defaultSuccessUrl("/dashboard",true).failureUrl("/login?error").permitAll())
+            .exceptionHandling(ex->ex.accessDeniedPage("/access-denied"))
+            .sessionManagement(session->session.sessionFixation(fixation->fixation.migrateSession()))
             .logout(logout->logout.logoutSuccessUrl("/").permitAll());
         http.headers(headers->headers.contentTypeOptions(c->{}).frameOptions(f->f.deny())
             .referrerPolicy(r->r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
