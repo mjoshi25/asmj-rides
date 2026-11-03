@@ -58,10 +58,10 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 
 ### 4. First login
 
-- The initial admin is seeded only on application startup when `ADMIN_USERNAME` and `ADMIN_PASSWORD` are present and no user with that email already exists.
-- Use the exact admin email and password to sign in.
+- The initial admin is created on application startup when `ADMIN_USERNAME` and `ADMIN_PASSWORD` are present and no account with that email exists. If the email already belongs to an admin, its existing password is preserved; if it belongs to a non-admin account, startup stops with a clear configuration error. The admin environment-variable mappings are available in both the default and production Spring profiles.
+- Confirm the Render startup logs contain `ASMJ Ride administrator created successfully` (first creation) or `ASMJ Ride admin account already exists` (later restarts). If they say `Admin bootstrap skipped`, `ADMIN_USERNAME` is missing from the running service environment.
+- Use the exact configured admin email and its initially configured password to sign in. Changing `ADMIN_PASSWORD` after creation does not reset an existing admin password.
 - Keep `OTP_DEV_MODE=false` in Render. Real SMS/OTP delivery has not been integrated; new users cannot complete the current OTP step in production until an SMS provider and delivery workflow are implemented. For safe initial smoke testing, use a controlled test account that has been verified through a secure, deliberate database/admin process; do not enable public OTP display on the live service.
-- Changing `ADMIN_PASSWORD` in Render does not automatically reset an already-created admin account. Use a controlled password-reset procedure before production.
 
 ## Local run
 
