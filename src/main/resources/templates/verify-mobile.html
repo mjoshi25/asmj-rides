@@ -1,9 +1,9 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Verify mobile · ASMJ Ride</title>
-  <link rel="stylesheet" href="/css/app.css?v=20261104-ui-redesign-v2">
+  <link rel="stylesheet" href="/css/app.css?v=20261104-support-chat-v1">
 </head>
 <body class="page-verify-mobile"><header class="auth-header"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><a class="auth-home-link" href="/">Back to home</a></header>
 <main class="auth">
@@ -23,5 +23,11 @@
   <p class="muted">Haven't received a code? Contact ASMJ Ride support and provide your registered email and mobile number. Codes are valid for 24 hours and are locked after five incorrect attempts.</p>
   <p><a href="/login">Back to sign in</a> · <a href="/register">Create an account</a></p>
 </main>
-<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Support</a><a href="/login">Sign in</a><a href="/register">Create account</a></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=20261104" defer></script></body>
+<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links">
+<a href="/" >Home</a>
+<a href="/support">Chat with Admin</a>
+<span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span>
+<span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span>
+<span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span>
+</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=20261104" defer></script></body>
 </html>

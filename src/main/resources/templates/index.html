@@ -1,19 +1,25 @@
 <!doctype html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ASMJ Ride | Your journey, your way</title>
 <meta name="description" content="Book convenient rides or become an ASMJ Ride driver or fleet partner.">
 <meta name="theme-color" content="#101d35">
-<link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/css/app.css?v=20261104-ui-redesign-v2">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="stylesheet" href="/css/app.css?v=20261104-support-chat-v1">
 </head>
 <body class="page-home">
-<header><b>ASMJ Ride</b><button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button><nav class="site-nav"><a href="/login">Sign in</a><a href="/verify-mobile">Verify mobile</a><a class="btn" href="/register">Get started</a></nav></header>
+<header><b>ASMJ Ride</b><button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button><nav class="site-nav"><span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/verify-mobile">Verify mobile</a><a class="btn" href="/register">Get started</a></span><span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a><a href="/support">Chat with Admin</a><form method="post" action="/logout" class="home-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="linkbtn logout-btn" type="submit">Logout</button></form></span></nav></header>
 <main class="hero">
-<section><small>LOCAL RIDES · SIMPLE BOOKINGS · RELIABLE JOURNEYS</small><h1>Go places.<br><em>Move freely.</em></h1><p>Book a ride when you need it, schedule your next journey, or join ASMJ Ride as a driver or fleet partner.</p><div class="actions"><a class="btn" href="/register">Create your account <span aria-hidden="true">→</span></a><a class="btn secondary" href="/login">I already have an account</a></div><p class="hero-trust">A simpler way to get moving with ASMJ Ride.</p></section>
+<section><small>LOCAL RIDES · SIMPLE BOOKINGS · RELIABLE JOURNEYS</small><h1>Go places.<br><em>Move freely.</em></h1><p>Book a ride when you need it, schedule your next journey, or join ASMJ Ride as a driver or fleet partner.</p><div class="actions" sec:authorize="isAnonymous()"><a class="btn" href="/register">Create your account <span aria-hidden="true">→</span></a><a class="btn secondary" href="/login">I already have an account</a></div><div class="actions" sec:authorize="isAuthenticated()"><a class="btn" href="/dashboard">Open my dashboard <span aria-hidden="true">→</span></a><a class="btn secondary" href="/support">Chat with Admin</a></div><p class="hero-trust">A simpler way to get moving with ASMJ Ride.</p></section>
 <aside class="home-visual"><div class="visual-top"><span class="live-dot"></span><span>YOUR NEXT JOURNEY STARTS HERE</span></div><div class="route-art" aria-hidden="true"><div class="route-line"></div><span class="route-pin pickup-pin">●</span><span class="route-pin destination-pin">◆</span><div class="route-car">🚘</div></div><div class="visual-caption"><div><small>TRAVEL YOUR WAY</small><h2>One ride at a time.</h2></div><span class="visual-arrow">↗</span></div><p>Choose your vehicle category and ride now or schedule ahead.</p></aside>
 </main>
 <section class="home-features" aria-label="ASMJ Ride features"><article><span class="feature-icon">⌖</span><h2>Book with ease</h2><p>Enter your pickup and destination and request a ride in a few steps.</p></article><article><span class="feature-icon">◷</span><h2>Your time, your plan</h2><p>Choose an immediate ride or schedule a journey up to 30 days ahead.</p></article><article><span class="feature-icon">↗</span><h2>Drive with ASMJ</h2><p>Register as an individual driver or fleet partner and manage your trips.</p></article></section>
-<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Support</a><a href="/login">Sign in</a><a href="/register">Create account</a></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
+<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links">
+<a href="/" >Home</a>
+<a href="/support">Chat with Admin</a>
+<span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span>
+<span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span>
+<span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span>
+</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
 <script src="/js/app-ui.js?v=20261104-v2" defer></script>
 </body></html>

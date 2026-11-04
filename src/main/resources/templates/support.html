@@ -1,1 +1,77 @@
-<!doctype html><html xmlns:th="http://www.thymeleaf.org"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Support · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=20261104-ui-redesign-v2"></head><body class="page-support"><header><b>ASMJ Ride · Support & safety</b><button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button><nav class="site-nav"><a href="/dashboard">Dashboard</a><a href="/payments">Payments</a><form method="post" action="/logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="linkbtn logout-btn" type="submit">Logout</button></form></nav></header><main class="panel"><h1>Support centre</h1><p class="success" th:if="${param.created}">Your support ticket was created.</p><p class="success" th:if="${param.sosSent}">SOS alert recorded. This app does not contact emergency services automatically; contact local emergency services directly if in immediate danger.</p><form th:if="${!admin}" method="post" action="/support/create" enctype="multipart/form-data" class="booking"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><h2>Create support ticket</h2><label>Related ride (optional)</label><select name="rideId"><option value="">General enquiry</option><option th:each="r:${rides}" th:value="${r.id}" th:text="${r.pickup}+' → '+${r.destination}+' ('+${r.status}+')'"></option></select><label>Category</label><select name="category"><option>GENERAL</option><option>PAYMENT</option><option>TRIP</option><option>DRIVER</option><option>SAFETY</option><option>LOST_ITEM</option><option>OTHER</option></select><label>Subject</label><input name="subject" maxlength="120" required><label>Details</label><textarea name="message" maxlength="2000" required></textarea><label>Attachments (up to 5 images or PDFs)</label><input type="file" name="attachments" accept="application/pdf,image/jpeg,image/png,image/webp" multiple><button class="btn">Submit ticket</button></form><h2 th:text="${admin?'All support tickets':'My support tickets'}"></h2><article class="ride" th:each="t:${tickets}"><div><b th:text="${t.subject}+' · '+${t.status}"></b><p th:text="${t.userName}+' · '+${t.category}+' · '+${t.message}"></p><small th:text="'Ride: '+${t.rideId}"></small><p th:if="${t.adminReply}" th:text="'Admin reply: '+${t.adminReply}"></p><p th:each="f:${t.attachments}"><a th:href="@{'/files/support/'+${t.id}+'/'+${f.id}}" target="_blank" th:text="'Attachment: '+${f.originalFilename}"></a></p></div><form th:if="${admin}" method="post" th:action="@{'/admin/support/'+${t.id}+'/reply'}" class="booking"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><textarea name="reply" placeholder="Reply" required></textarea><select name="status"><option>IN_PROGRESS</option><option>RESOLVED</option><option>CLOSED</option></select><button class="btn">Save reply</button></form></article><p th:if="${#lists.isEmpty(tickets)}">No tickets found.</p></main><footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Support</a><a href="/login">Sign in</a><a href="/register">Create account</a></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=20261104" defer></script></body></html>
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chat with ASMJ Ride Admin · Support</title>
+  <link rel="stylesheet" href="/css/app.css?v=20261104-support-chat-v1">
+</head>
+<body class="page-support">
+<header class="app-header">
+  <b>ASMJ Ride <span class="admin-nav-note" th:if="${admin}">/ ADMIN SUPPORT INBOX</span><span th:unless="${admin}">· Support</span></b>
+  <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+  <nav class="site-nav">
+    <a href="/dashboard">Dashboard</a><a href="/payments">Payments</a>
+    <a th:if="${admin}" href="/admin">Admin</a>
+    <form method="post" action="/logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="linkbtn logout-btn" type="submit">Logout</button></form>
+  </nav>
+</header>
+<main class="support-layout">
+  <section class="support-intro">
+    <div><span class="support-eyebrow">ASMJ RIDE CUSTOMER CARE</span><h1 th:text="${admin?'Support conversations':'Chat with Admin'}">Chat with Admin</h1>
+      <p th:text="${admin?'Review customer and partner queries, respond to conversations and track their status.':'Need help with a ride, payment or account? Start a private conversation with the ASMJ Ride admin team.'}">Start a private conversation with our admin team.</p>
+    </div>
+    <div class="support-shield">✦<small>PRIVATE SUPPORT</small></div>
+  </section>
+
+  <p class="success" th:if="${param.created}">Your conversation has been created. The ASMJ Ride admin team can now reply here.</p>
+  <p class="success" th:if="${param.updated}">Your message has been sent.</p>
+  <p class="success" th:if="${param.sosSent}">SOS alert recorded. This app does not contact emergency services automatically; contact local emergency services directly if in immediate danger.</p>
+  <p class="error" th:if="${param.error}">We could not process your request. Check the required details and attachment size/type, then try again.</p>
+
+  <section class="support-new" th:if="${!admin}">
+    <div class="support-section-heading"><div><span class="support-eyebrow">START A CONVERSATION</span><h2>New chat with Admin</h2></div><span class="support-live">● Private channel</span></div>
+    <form method="post" action="/support/create" enctype="multipart/form-data" class="support-compose">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <div class="support-form-grid">
+        <label>Mobile number <span class="required-mark">Required</span><input name="mobile" type="tel" inputmode="tel" pattern="[+]?[0-9 -]{10,18}" maxlength="18" th:value="${mobile}" placeholder="Enter contact mobile number" required></label>
+        <label>Reason for contacting<select name="category" required><option value="GENERAL">General enquiry</option><option value="PAYMENT">Payment / refund</option><option value="TRIP">Ride / trip</option><option value="DRIVER">Driver / partner</option><option value="SAFETY">Safety concern</option><option value="LOST_ITEM">Lost item</option><option value="OTHER">Other</option></select></label>
+        <label class="support-full">Subject<input name="subject" maxlength="120" placeholder="Briefly describe what you need help with" required></label>
+        <label class="support-full">Your message<textarea name="message" maxlength="2000" placeholder="Write your message to the ASMJ Ride admin team..." required></textarea></label>
+        <label class="support-full">Attachment <span class="optional-mark">Optional · up to 5 files, 8 MB each</span><input type="file" name="attachments" accept="application/pdf,image/jpeg,image/png,image/webp" multiple></label>
+      </div>
+      <div class="support-compose-bottom"><small>Your conversation and attachments are visible only to you and authorized ASMJ Ride administrators.</small><button class="btn" type="submit">Send message <span>→</span></button></div>
+    </form>
+  </section>
+
+  <section class="support-conversations">
+    <div class="support-section-heading"><div><span class="support-eyebrow" th:text="${admin?'ADMIN INBOX':'YOUR SUPPORT HISTORY'}">YOUR SUPPORT HISTORY</span><h2 th:text="${admin?'All conversations':'Your conversations'}">Your conversations</h2></div><span class="conversation-count" th:text="${#lists.size(tickets)}+' conversations'">0 conversations</span></div>
+    <article class="conversation-card" th:each="t:${tickets}">
+      <div class="conversation-head">
+        <div><span class="conversation-category" th:text="${t.category}">GENERAL</span><h3 th:text="${t.subject}">Support request</h3>
+          <p><span th:text="${t.userName}">Customer</span><span th:if="${admin and t.userMobile!=null}" th:text="' · '+${t.userMobile}"></span><span th:text="' · '+${t.createdAt}"></span></p>
+        </div>
+        <span class="status-pill" th:classappend="${#strings.toLowerCase(t.status)}" th:text="${t.status}">OPEN</span>
+      </div>
+      <div class="conversation-meta" th:if="${t.rideId!=null and !t.rideId.isEmpty()}" th:text="'Related ride: '+${t.rideId}"></div>
+      <div class="chat-thread">
+        <div class="chat-message" th:each="legacyFile:${t.attachments}"><div class="chat-message-meta"><b>Earlier attachment</b></div><div class="chat-attachments"><a th:href="@{'/files/support/'+${t.id}+'/'+${legacyFile.id}}" target="_blank" rel="noopener" th:text="'📎 '+${legacyFile.originalFilename}">Attachment</a></div></div>
+        <div class="chat-message" th:each="msg:${t.messages}" th:classappend="${msg.senderRole=='ADMIN'?'from-admin':'from-user'}">
+          <div class="chat-message-meta"><b th:text="${msg.senderRole=='ADMIN'?'ASMJ Ride Admin':msg.senderName}">Sender</b><time th:text="${msg.createdAt}">Time</time></div>
+          <p th:if="${msg.text!=null and !msg.text.isEmpty()}" th:text="${msg.text}">Message text</p>
+          <div class="chat-attachments" th:if="${!#lists.isEmpty(msg.attachments)}"><a th:each="f:${msg.attachments}" th:href="@{'/files/support/'+${t.id}+'/'+${f.id}}" target="_blank" rel="noopener" th:text="'📎 '+${f.originalFilename}">Attachment</a></div>
+        </div>
+        <div class="chat-message from-user" th:if="${#lists.isEmpty(t.messages)}"><div class="chat-message-meta"><b th:text="${t.userName}">Customer</b><time th:text="${t.createdAt}">Time</time></div><p th:text="${t.message}">Original message</p></div>
+        <div class="chat-message from-admin legacy-reply" th:if="${#lists.isEmpty(t.messages) and t.adminReply!=null}"><div class="chat-message-meta"><b>ASMJ Ride Admin</b></div><p th:text="${t.adminReply}">Admin reply</p></div>
+      </div>
+      <form th:action="${admin?'/admin/support/'+t.id+'/message':'/support/'+t.id+'/message'}" method="post" enctype="multipart/form-data" class="chat-reply-form">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <textarea name="message" maxlength="2000" th:placeholder="${admin?'Write a reply to '+t.userName+'...':'Reply to the admin team...'}" required></textarea>
+        <div class="chat-reply-actions"><label class="attach-label">＋ Attach file <input type="file" name="attachments" accept="application/pdf,image/jpeg,image/png,image/webp" multiple></label><small>Optional · max 5 files</small><label class="admin-status-control" th:if="${admin}">Status<select name="status"><option value="OPEN" th:selected="${t.status=='OPEN'}">Open</option><option value="IN_PROGRESS" th:selected="${t.status=='IN_PROGRESS'}">In progress</option><option value="RESOLVED" th:selected="${t.status=='RESOLVED'}">Resolved</option><option value="CLOSED" th:selected="${t.status=='CLOSED'}">Closed</option></select></label><button class="btn" type="submit">Send reply</button></div>
+      </form>
+    </article>
+    <div class="support-empty" th:if="${#lists.isEmpty(tickets)}"><div>✉</div><h3>No conversations yet</h3><p th:text="${admin?'New customer support chats will appear here.':'Start a new chat above and our admin team will respond here.'}">Start a new chat above.</p></div>
+  </section>
+</main>
+<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Chat with Admin</a><span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span><span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span><span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
+<script src="/js/app-ui.js?v=20261104-support-chat-v1" defer></script>
+</body></html>

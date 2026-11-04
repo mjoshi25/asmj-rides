@@ -121,3 +121,6 @@ Render keeps prior deploys. If a deployment breaks, use the Render dashboard to 
 ASMJ Ride uses an administrator-issued one-time security code instead of an SMS gateway. In the admin console, open **Mobile verification**, review the registered account details, generate a code, and share it manually with the account holder after checking their identity. The six-digit code expires after 24 hours, allows up to five incorrect attempts, is stored only as a BCrypt hash, and is displayed to the administrator once. The user enters their registered email and code at `/verify-mobile`. No Fast2SMS, MSG91, API key, DLT registration, or OTP template is required.
 
 The admin verification page records account name, email, mobile, role, account status, registration time, code issue time, issuing administrator, expiry, failed attempts, and verification time/method. Never share the code in a public channel.
+
+## Support chat update
+See [SUPPORT-CHAT-IMPLEMENTATION.md](SUPPORT-CHAT-IMPLEMENTATION.md) for the admin support conversation workflow, mandatory mobile number, optional private attachments, role-based access, and deployment notes.
