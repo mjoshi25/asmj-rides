@@ -131,3 +131,104 @@ header:not(.auth-header) .site-nav a[href="/register"]:hover{background:linear-g
 .page-customer select,.page-customer input,.page-customer textarea,.page-driver select,.page-driver input{max-width:100%}
 .page-customer #returnWrap{padding:16px;margin:12px 0;border:1px solid #b9e7db;border-radius:14px;background:#f0fbf7}
 .page-admin-rides .inline select{min-width:170px}
+
+/* ASMJ Ride responsive release: mobile-first layout corrections across authenticated portals */
+html,body{max-width:100%;overflow-x:hidden}body{min-width:320px}img,svg,video,iframe{max-width:100%}main{min-width:0}main.panel{width:min(1240px,calc(100% - 44px))}.panel,.auth,.ride,.booking,.support-layout,.conversation-card{min-width:0;max-width:100%}.panel *,.ride *,.booking *{min-width:0;overflow-wrap:anywhere}
+/* Keep desktop navigation compact and make the mobile menu a usable overlay-like stack */
+.app-header{gap:12px}.site-nav{min-width:0}.site-nav form{display:flex;align-items:center}.site-nav .linkbtn{min-height:42px}.nav-toggle{flex:0 0 43px}
+/* Dashboard metrics and operational summaries */
+.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch}.stats-grid>.ride{min-width:0}.stats-grid .ride h2{font-size:clamp(1.25rem,2.2vw,1.7rem);overflow-wrap:anywhere}.ride-list{min-width:0}.ride{min-width:0}.ride>div{min-width:0;max-width:100%}.ride .actions{min-width:0}.ride .actions form{min-width:0;max-width:100%}.ride .actions .btn,.ride form .btn{white-space:normal;overflow-wrap:anywhere}
+/* Forms: prevent oversized fields and make action rows wrap naturally */
+form{min-width:0;max-width:100%}.booking{min-width:0}.booking>*{min-width:0}.inline{flex-wrap:wrap}.inline select{max-width:100%}.actions{min-width:0;flex-wrap:wrap}.actions form{min-width:0;max-width:100%}.actions button,.actions .btn{max-width:100%;white-space:normal}
+/* Tables stay inside their own scroll region rather than widening the whole page */
+.panel table{width:100%;max-width:100%;table-layout:auto}.panel{overflow-wrap:anywhere}.panel pre,.panel code{white-space:pre-wrap;overflow-wrap:anywhere}.panel details{max-width:100%}.panel details>*{max-width:100%}
+/* Admin operation filters and multi-control forms */
+.panel form:not(.booking){min-width:0}.panel form input,.panel form select,.panel form textarea{max-width:100%}.panel .inline form{flex:1 1 220px}.panel .inline form .btn{width:100%}
+@media(max-width:1024px){main.panel{width:calc(100% - 32px)}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr}.hero aside{width:100%}}
+@media(max-width:900px){
+  header:not(.auth-header){grid-template-columns:minmax(0,1fr) 46px;min-height:66px;padding:10px 15px;gap:10px}
+  header:not(.auth-header)>b{font-size:17px;white-space:normal;line-height:1.2}
+  header:not(.auth-header) .site-nav{grid-column:1/-1;width:100%;max-height:min(72vh,620px);overflow-y:auto;overscroll-behavior:contain;padding:10px 0 4px}
+  header:not(.auth-header) .site-nav a,header:not(.auth-header) .site-nav .linkbtn{width:100%;min-height:46px;justify-content:flex-start;padding:12px 14px;font-size:14px}
+  header:not(.auth-header) .site-nav a[href="/register"]{justify-content:center}
+  header:not(.auth-header) .site-nav form{width:100%}
+  .site-nav .logout-btn{justify-content:center!important}
+  main{width:calc(100% - 30px);margin:22px auto 36px}
+  .panel{padding:clamp(18px,3vw,28px);border-radius:20px}
+  .ride{gap:14px}
+}
+@media(max-width:640px){
+  body{font-size:14px;line-height:1.55}
+  main,main.panel{width:calc(100% - 20px);margin:12px auto 25px}
+  .panel{padding:17px 13px;border-radius:17px;box-shadow:0 8px 24px rgba(18,37,67,.07)}
+  .panel h1{font-size:clamp(23px,7vw,29px);letter-spacing:-.7px;line-height:1.15}
+  .panel h2{font-size:18px;margin:23px 0 12px}
+  .panel h3{font-size:15px}
+  .panel p{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+  .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0}
+  .stats-grid .ride{padding:13px 11px;border-radius:13px;gap:5px}
+  .stats-grid .ride h2{font-size:1.25rem;margin:4px 0 0}
+  .stats-grid .ride p,.stats-grid .ride small{font-size:11px}
+  .ride-list{gap:11px}
+  .ride{padding:13px;border-radius:14px;gap:11px;box-shadow:0 4px 14px rgba(18,37,67,.045)}
+  .ride>div:first-child>b,.ride strong{font-size:13px}
+  .ride p{font-size:12px;margin:4px 0}
+  .ride small{font-size:11px;line-height:1.45;display:inline-block}
+  .ride .actions{display:grid;grid-template-columns:1fr;gap:8px;width:100%}
+  .ride .actions>*{width:100%;max-width:100%}
+  .ride .actions form{width:100%}
+  .ride .actions .btn,.ride form .btn,.actions>.btn,.actions>a.btn{width:100%;min-height:45px;font-size:13px}
+  .booking{grid-template-columns:minmax(0,1fr);gap:9px;padding:13px;margin:15px 0 22px;border-radius:15px}
+  .booking button,.booking #scheduleWrap{grid-column:auto}
+  .booking label{margin-top:5px}
+  input,select,textarea{min-height:46px;font-size:16px;padding:11px 12px;border-radius:11px}
+  textarea{min-height:100px}
+  .btn,button.btn{min-height:45px;padding:11px 14px;font-size:13px;border-radius:11px;white-space:normal}
+  .inline{align-items:stretch;flex-direction:column;gap:9px;width:100%}
+  .inline select{width:100%;max-width:100%}
+  .actions{align-items:stretch;flex-direction:column;gap:9px;width:100%}
+  .actions form{width:100%}
+  .panel form{gap:9px;margin:14px 0}
+  .panel form .btn{width:100%}
+  .panel .inline form{flex:1 1 auto;width:100%}
+  /* Tables have an independent horizontal scroll area; the document itself never overflows */
+  .panel table{display:block;width:100%;max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;white-space:normal}
+  .panel table thead,.panel table tbody{min-width:600px}
+  .panel td,.panel th{padding:9px 10px;font-size:11px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+  .panel table td .btn,.panel table th .btn{min-height:36px;padding:7px 9px;font-size:11px}
+  .panel details{padding:10px;border-radius:11px}
+  .panel details summary{font-size:12px;font-weight:800}
+  .site-footer{padding:24px 15px 19px}
+  .footer-inner{gap:12px}
+  .footer-inner>p{margin:0;font-size:12px}
+  .site-footer .footer-links{display:flex;align-items:stretch;justify-content:flex-start;gap:8px;width:100%}
+  .site-footer .footer-links a,.site-footer .footer-links .footer-logout button{min-height:40px;padding:8px 10px;font-size:11px}
+  .footer-inner>small{font-size:10px}
+  .auth-header{padding:10px 14px;min-height:60px}
+  .footer-brand{font-size:16px;gap:8px}
+  .brand-mark{width:34px;height:34px;border-radius:10px}
+  .auth{width:calc(100% - 20px);margin:17px auto 25px;padding:24px 16px;border-radius:18px}
+  .auth h1{font-size:27px}
+  .hero{width:calc(100% - 20px);margin:12px auto 24px;padding:25px 17px;border-radius:20px;gap:19px}
+  .hero h1{font-size:clamp(38px,11vw,50px);letter-spacing:-1.8px}
+  .hero aside{padding:16px;border-radius:16px}
+  .hero aside h2{font-size:20px}
+  .support-layout{width:calc(100% - 20px);margin:12px auto 25px}
+  .support-form-grid{grid-template-columns:minmax(0,1fr)}
+  .support-form-grid .support-full{grid-column:auto}
+  .chat-message{max-width:100%;overflow-wrap:anywhere}
+  .conversation-card,.chat-thread,.support-compose{min-width:0;max-width:100%}
+  .admin-status-control{align-items:stretch;flex-direction:column;width:100%}
+  .admin-status-control select{width:100%;max-width:100%}
+}
+@media(max-width:380px){
+  header:not(.auth-header){padding-inline:11px}
+  main,main.panel{width:calc(100% - 14px)}
+  .panel{padding:14px 10px}
+  .stats-grid{gap:7px}
+  .stats-grid .ride{padding:11px 9px}
+  .stats-grid .ride h2{font-size:1.1rem}
+  .ride{padding:11px}
+  .site-footer .footer-links{gap:6px}
+  .site-footer .footer-links a,.site-footer .footer-links .footer-logout button{padding-inline:8px;font-size:10px}
+}
