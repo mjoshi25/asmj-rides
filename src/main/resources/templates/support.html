@@ -23,10 +23,10 @@
     <div class="support-shield">✦<small>PRIVATE SUPPORT</small></div>
   </section>
 
-  <p class="success" th:if="${param.created}">Your conversation has been created. The ASMJ Ride admin team can now reply here.</p>
-  <p class="success" th:if="${param.updated}">Your message has been sent.</p>
-  <p class="success" th:if="${param.sosSent}">SOS alert recorded. This app does not contact emergency services automatically; contact local emergency services directly if in immediate danger.</p>
-  <p class="error" th:if="${param.error}">We could not process your request. Check the required details and attachment size/type, then try again.</p>
+  <p class="success" th:if="${param.created != null}">Your conversation has been created. The ASMJ Ride admin team can now reply here.</p>
+  <p class="success" th:if="${param.updated != null}">Your message has been sent.</p>
+  <p class="success" th:if="${param.sosSent != null}">SOS alert recorded. This app does not contact emergency services automatically; contact local emergency services directly if in immediate danger.</p>
+  <p class="error" th:if="${param.error != null}">We could not process your request. Check the required details and attachment size/type, then try again.</p>
 
   <section class="support-new" th:if="${!admin}">
     <div class="support-section-heading"><div><span class="support-eyebrow">START A CONVERSATION</span><h2>New chat with Admin</h2></div><span class="support-live">● Private channel</span></div>
