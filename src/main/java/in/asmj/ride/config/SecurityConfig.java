@@ -41,6 +41,8 @@ if ("SUSPENDED".equals(user.getStatus())) {
             .requestMatchers("/admin","/admin/**").hasRole("ADMIN")
             .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
             .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER")
+            .requestMatchers("/fleet","/fleet/**").hasRole("FLEET_OWNER")
+            .requestMatchers("/admin/rides/**","/admin/operations/**","/admin/payments/**").hasRole("ADMIN")
             .requestMatchers("/driver","/driver/**").hasRole("DRIVER")
             .requestMatchers("/customer","/customer/**","/rides/book","/rides/*/cancel").hasRole("CUSTOMER")
             .requestMatchers("/rides/*/accept","/rides/*/status","/rides/*/location","/rides/*/return/**").hasRole("DRIVER")

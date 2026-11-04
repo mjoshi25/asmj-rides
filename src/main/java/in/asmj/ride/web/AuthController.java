@@ -140,7 +140,7 @@ public class AuthController {
         var user = repository.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
         return "redirect:" + (user.getRole().equals("ADMIN") ? "/admin"
                 : user.getRole().equals("CUSTOMER") ? "/customer"
-                : user.getRole().equals("DRIVER") ? "/driver" : "/partner");
+                : user.getRole().equals("DRIVER") ? "/driver" : "/fleet");
     }
 
     private void clearActiveCode(UserAccount user) {

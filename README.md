@@ -124,3 +124,6 @@ The admin verification page records account name, email, mobile, role, account s
 
 ## Support chat update
 See [SUPPORT-CHAT-IMPLEMENTATION.md](SUPPORT-CHAT-IMPLEMENTATION.md) for the admin support conversation workflow, mandatory mobile number, optional private attachments, role-based access, and deployment notes.
+
+## Phases 5–8 update
+See `PHASE-5-8-IMPLEMENTATION.md` for fleet-owner dashboard and trip assignment, admin trip status/audit controls, round-trip payment allocation and independent settlements, analytics filters, and CSV export.

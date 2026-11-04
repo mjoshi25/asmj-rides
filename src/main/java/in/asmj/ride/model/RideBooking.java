@@ -3,6 +3,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 @Document("rides")
 public class RideBooking {
  @Id private String id;
@@ -13,6 +15,9 @@ public class RideBooking {
  private int actualDurationMinutes, waitingMinutes; private String pickupOtp; private Instant driverLocationUpdatedAt, tripStartedAt, tripCompletedAt; private double cancellationCharge;
  private LocalDateTime scheduledAt;
  private Instant createdAt=Instant.now(), updatedAt=Instant.now();
+ private List<TripStatusEvent> statusHistory=new ArrayList<>();
+ public List<TripStatusEvent> getStatusHistory(){return statusHistory;} public void setStatusHistory(List<TripStatusEvent> v){statusHistory=v==null?new ArrayList<>():v;}
+ public void addStatusEvent(String from,String to,String actor,String note){if(statusHistory==null)statusHistory=new ArrayList<>();statusHistory.add(new TripStatusEvent(from,to,actor,note,Instant.now()));}
 
  public String getJourneyType(){return journeyType;} public void setJourneyType(String v){journeyType=v;}
  public String getPickupCityId(){return pickupCityId;} public void setPickupCityId(String v){pickupCityId=v;} public String getPickupCity(){return pickupCity;} public void setPickupCity(String v){pickupCity=v;}
