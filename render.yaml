@@ -11,14 +11,6 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: OTP_DEV_MODE
-        value: "false"
-      - key: MSG91_AUTHKEY
-        sync: false
-      - key: MSG91_OTP_TEMPLATE_ID
-        sync: false
-      - key: MSG91_COUNTRY_CODE
-        value: "91"
       - key: SESSION_COOKIE_SECURE
         value: "true"
       - key: CLOUDINARY_CLOUD_NAME

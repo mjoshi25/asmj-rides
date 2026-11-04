@@ -6,7 +6,6 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 
 ## Included phases
 
-- **Phase 1:** customer, individual driver and fleet-owner onboarding; password login; MSG91 SMS OTP verification (with local-only development OTP fallback); partner/vehicle admin approval.
 - **Phase 2:** immediate/scheduled ride request foundation; vehicle category selection; driver acceptance; fleet assignment; cancellation.
 - **Phase 3:** browser GPS while driver page is open; customer location polling; pickup OTP; start/complete trip.
 - **Phase 4:** admin-configurable fare inputs, category multipliers, waiting/night/cancellation charges.
@@ -44,10 +43,6 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 | `MONGODB_URI` | Your complete Atlas URI including `/asmj_ride` |
 | `ADMIN_USERNAME` | Admin email, e.g. `admin@yourdomain.com` |
 | `ADMIN_PASSWORD` | Unique strong password, minimum 12 characters |
-| `OTP_DEV_MODE` | `false` |
-| `MSG91_AUTHKEY` | MSG91 account Authkey (secret) |
-| `MSG91_OTP_TEMPLATE_ID` | Approved MSG91 OTP template ID containing `##OTP##` |
-| `MSG91_COUNTRY_CODE` | `91` for India |
 | `SESSION_COOKIE_SECURE` | `true` |
 | `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Your Cloudinary API key |
@@ -63,7 +58,6 @@ This is a development/testing foundation. Phase 8 adds Render deployment configu
 
 - The initial admin is seeded only on application startup when `ADMIN_USERNAME` and `ADMIN_PASSWORD` are present and no user with that email already exists.
 - Use the exact admin email and password to sign in.
-- Keep `OTP_DEV_MODE=false` in Render. Configure `MSG91_AUTHKEY` and `MSG91_OTP_TEMPLATE_ID` before accepting registrations. The OTP template must be created in the MSG91 dashboard, contain the `##OTP##` variable, and be approved for Indian SMS delivery (including applicable DLT/sender/template requirements). The app sends a 6-digit OTP with a 5-minute expiry; MSG91 validates the code.
 - Changing `ADMIN_PASSWORD` in Render does not automatically reset an already-created admin account. Use a controlled password-reset procedure before production.
 
 ## Local run
@@ -75,19 +69,16 @@ Requirements: JDK 17 and Maven 3.9+.
 $env:MONGODB_URI = "mongodb://localhost:27017/asmj_ride"
 $env:ADMIN_USERNAME = "admin@localhost.test"
 $env:ADMIN_PASSWORD = "Use-A-Unique-Password-123!"
-$env:OTP_DEV_MODE = "true" # local development only
 mvn clean package
 mvn spring-boot:run
 ```
 
-Open `http://localhost:8080`. Local `application.properties` defaults to localhost MongoDB and OTP development mode off; explicitly set `OTP_DEV_MODE=true` only when testing locally.
 
 ## Render smoke-test checklist
 
 1. `/actuator/health` returns `{"status":"UP"}`. Do not expose other actuator endpoints.
 2. Home page loads over HTTPS and login works.
 3. Admin can open `/admin`, `/admin/operations`, `/admin/rides`, `/admin/users`, `/admin/fares`, `/payments`, `/support`.
-4. Configure MSG91 credentials and an approved OTP template; create a test customer, request an OTP, verify it, then sign in. Driver/fleet accounts must still be approved by admin after mobile verification.
 5. Set Cloudinary environment variables, then upload a profile photo, partner ID/licence, multiple vehicle images, RC/insurance, UPI proof and support attachments. Confirm each asset appears in the relevant dashboard.
 6. Open `/admin/uploads`, verify the required partner and vehicle documents, and confirm approval is blocked before verification and permitted after all required documents are verified.
 7. Approve a test driver and vehicle; create a test ride; accept it; test pickup OTP, trip status and fare.
@@ -106,7 +97,6 @@ Open `http://localhost:8080`. Local `application.properties` defaults to localho
 - Pending partners can sign in after mobile verification to complete their onboarding uploads. Ride acceptance remains blocked until the partner and vehicle are approved.
 
 ## Important limitations — not production-ready
-- **OTP:** MSG91 integration is implemented, but it is not live until valid credentials, an approved template, Indian DLT/sender configuration and account balance are set in MSG91. A 30-second resend cooldown is enforced per account; add broader abuse monitoring and CAPTCHA before large-scale public launch. OTP display is only for local development and must remain disabled on Render.
 - **Dispatch/scheduling:** no production proximity/radius dispatch, background scheduled ride reminders, automatic future assignment or concurrency/locking guarantee.
 - **GPS/maps:** location works only while the driver's browser page remains open; no background tracking, routing/map matching or independently verified distance calculation.
 - **Payments:** UPI is manual reference and screenshot submission for admin review; no payment gateway, QR, automatic bank reconciliation, actual payout or automatic refund.
@@ -114,14 +104,20 @@ Open `http://localhost:8080`. Local `application.properties` defaults to localho
 - **Security/operations:** no independent penetration test, malware scanning, comprehensive audit/event trail, fraud detection, operational alerting, backup/restore drill or privacy-retention workflow. Review role authorization and CSRF behavior during end-to-end testing.
 - **Testing:** a successful Docker build, Maven test suite, Atlas runtime test and full end-to-end test must be completed before public use. Do not use real payment details or identity documents during initial testing.
 
+
 ## Troubleshooting
 
 - **Health check fails:** inspect Render logs; confirm the Docker build completed and that MongoDB is reachable.
 - **Mongo timeout/server selection:** verify `MONGODB_URI`, Atlas database user/password, URI-encoded special characters, and Atlas Network Access.
 - **Admin login fails:** confirm `ADMIN_USERNAME` is an email and `ADMIN_PASSWORD` is at least 12 characters; if the account already exists, startup seeding will not overwrite its password.
-- **OTP cannot be requested:** confirm `MSG91_AUTHKEY`, `MSG91_OTP_TEMPLATE_ID`, template approval, DLT registration/sender configuration, account balance and that the mobile number is valid. Check MSG91 OTP logs and Render application logs; do not share the Authkey. Do not enable development OTP output on the public service.
 - **Service sleeps:** the free Render plan may spin down; use a paid always-on instance for continuous testing.
 
 ## Rollback
 
 Render keeps prior deploys. If a deployment breaks, use the Render dashboard to roll back to the previous successful deploy, then inspect logs and fix the GitHub commit before redeploying.
+
+## Manual mobile verification
+
+ASMJ Ride uses an administrator-issued one-time security code instead of an SMS gateway. In the admin console, open **Mobile verification**, review the registered account details, generate a code, and share it manually with the account holder after checking their identity. The six-digit code expires after 24 hours, allows up to five incorrect attempts, is stored only as a BCrypt hash, and is displayed to the administrator once. The user enters their registered email and code at `/verify-mobile`. No Fast2SMS, MSG91, API key, DLT registration, or OTP template is required.
+
+The admin verification page records account name, email, mobile, role, account status, registration time, code issue time, issuing administrator, expiry, failed attempts, and verification time/method. Never share the code in a public channel.

@@ -42,21 +42,25 @@ public class AsmjRideApplication {
 
             String email = username.trim().toLowerCase();
 
-            UserAccount admin = repository.findByEmailIgnoreCase(email)
-                    .orElseGet(UserAccount::new);
-
-            if (admin.getName() == null || admin.getName().isBlank()) {
+            var existing = repository.findByEmailIgnoreCase(email);
+            UserAccount admin;
+            if (existing.isPresent()) {
+                admin = existing.get();
+                if (!"ADMIN".equals(admin.getRole())) {
+                    throw new IllegalStateException("ADMIN_USERNAME belongs to a non-admin account. Use a separate administrator email.");
+                }
+                // Keep the existing administrator password; do not reset it on every restart.
+            } else {
+                admin = new UserAccount();
                 admin.setName("ASMJ Ride Administrator");
+                admin.setEmail(email);
+                admin.setMobile("0000000000");
+                admin.setPasswordHash(encoder.encode(password));
+                admin.setRole("ADMIN");
             }
-
-            admin.setEmail(email);
-            admin.setMobile("0000000000");
-            admin.setPasswordHash(encoder.encode(password));
-            admin.setRole("ADMIN");
             admin.setStatus("APPROVED");
             admin.setMobileVerified(true);
             admin.setAvailable(true);
-
             repository.save(admin);
 
             System.out.println("ASMJ Ride administrator bootstrap completed.");

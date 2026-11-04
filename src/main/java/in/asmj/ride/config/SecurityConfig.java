@@ -37,7 +37,7 @@ if ("SUSPENDED".equals(user.getStatus())) {
 
     @Bean SecurityFilterChain chain(HttpSecurity http,DaoAuthenticationProvider provider)throws Exception{
         http.authenticationProvider(provider).authorizeHttpRequests(auth->auth
-            .requestMatchers("/","/register","/otp/**","/login","/access-denied","/css/**","/js/**","/images/**","/favicon.ico","/manifest.webmanifest","/actuator/health","/actuator/health/**").permitAll()
+            .requestMatchers("/","/register","/verify-mobile","/login","/access-denied","/css/**","/js/**","/images/**","/favicon.ico","/manifest.webmanifest","/actuator/health","/actuator/health/**").permitAll()
             .requestMatchers("/admin","/admin/**").hasRole("ADMIN")
             .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
             .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER")

@@ -2,8 +2,6 @@ package in.asmj.ride.web;
 
 import in.asmj.ride.model.UserAccount;
 import in.asmj.ride.repo.UserAccountRepository;
-import in.asmj.ride.service.Msg91OtpService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,29 +9,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.security.SecureRandom;
 import java.time.Instant;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Controller
 public class AuthController {
-    private static final long OTP_EXPIRY_SECONDS = 300;
-    private static final long RESEND_COOLDOWN_SECONDS = 30;
-
     private final UserAccountRepository repository;
     private final PasswordEncoder passwordEncoder;
-    private final Msg91OtpService msg91OtpService;
-    private final SecureRandom random = new SecureRandom();
 
-    @Value("${app.otp.dev-mode:false}")
-    private boolean devOtpMode;
-
-    public AuthController(UserAccountRepository repository, PasswordEncoder passwordEncoder,
-                          Msg91OtpService msg91OtpService) {
+    public AuthController(UserAccountRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
-        this.msg91OtpService = msg91OtpService;
     }
 
     @GetMapping("/")
@@ -44,6 +29,81 @@ public class AuthController {
 
     @GetMapping("/access-denied")
     String accessDenied() { return "access-denied"; }
+
+    @GetMapping("/verify-mobile")
+    String verifyMobilePage(@RequestParam(required = false) String email, Model model) {
+        model.addAttribute("email", email == null ? "" : email.trim());
+        return "verify-mobile";
+    }
+
+    @PostMapping("/verify-mobile")
+    String verifyMobile(@RequestParam String email, @RequestParam String securityCode, Model model) {
+        String normalizedEmail = email == null ? "" : email.trim().toLowerCase();
+        String code = securityCode == null ? "" : securityCode.trim();
+        model.addAttribute("email", normalizedEmail);
+
+        if (!normalizedEmail.contains("@") || !code.matches("[0-9]{6}")) {
+            model.addAttribute("error", "Enter your registered email and the 6-digit security code provided by ASMJ Ride support.");
+            return "verify-mobile";
+        }
+
+        var account = repository.findByEmailIgnoreCase(normalizedEmail);
+        if (account.isEmpty()) {
+            model.addAttribute("error", "We could not verify these details. Check your email and contact ASMJ Ride support if needed.");
+            return "verify-mobile";
+        }
+
+        UserAccount user = account.get();
+        if ("ADMIN".equals(user.getRole())) {
+            model.addAttribute("error", "Administrator accounts do not use customer mobile verification.");
+            return "verify-mobile";
+        }
+        if (user.isMobileVerified()) {
+            model.addAttribute("success", "Your mobile number is already verified. You can sign in.");
+            return "login";
+        }
+        if ("SUSPENDED".equals(user.getStatus()) || "REJECTED".equals(user.getStatus())) {
+            model.addAttribute("error", "This account is not eligible for mobile verification. Please contact ASMJ Ride support.");
+            return "verify-mobile";
+        }
+
+        Instant now = Instant.now();
+        if (user.getManualMobileCodeHash() == null || user.getManualMobileCodeExpiresAt() == null) {
+            model.addAttribute("error", "No active security code is available. Please contact ASMJ Ride support and request a code.");
+            return "verify-mobile";
+        }
+        if (now.isAfter(user.getManualMobileCodeExpiresAt())) {
+            clearActiveCode(user);
+            repository.save(user);
+            model.addAttribute("error", "Your security code has expired. Please contact ASMJ Ride support to request a new code.");
+            return "verify-mobile";
+        }
+        if (user.getManualMobileCodeAttempts() >= 5) {
+            clearActiveCode(user);
+            repository.save(user);
+            model.addAttribute("error", "This security code has been locked after too many attempts. Please request a new code from support.");
+            return "verify-mobile";
+        }
+
+        if (!passwordEncoder.matches(code, user.getManualMobileCodeHash())) {
+            int attempts = user.getManualMobileCodeAttempts() + 1;
+            user.setManualMobileCodeAttempts(attempts);
+            if (attempts >= 5) clearActiveCode(user);
+            repository.save(user);
+            model.addAttribute("error", attempts >= 5
+                    ? "Too many incorrect attempts. The code has been locked; please request a new code from support."
+                    : "The security code is incorrect. Please check it and try again. Attempts remaining: " + (5 - attempts) + ".");
+            return "verify-mobile";
+        }
+
+        user.setMobileVerified(true);
+        user.setMobileVerifiedAt(now);
+        user.setMobileVerificationMethod("ADMIN_ISSUED_SECURITY_CODE");
+        clearActiveCode(user);
+        repository.save(user);
+        model.addAttribute("success", "Your mobile number has been verified successfully. You can now sign in.");
+        return "login";
+    }
 
     @GetMapping("/register")
     String register() { return "register"; }
@@ -72,124 +132,7 @@ public class AuthController {
         user.setStatus("CUSTOMER".equals(role) ? "APPROVED" : "PENDING");
         user.setMobileVerified(false);
         repository.save(user);
-        return "redirect:/otp/request?email=" + URLEncoder.encode(normalizedEmail, StandardCharsets.UTF_8);
-    }
-
-    @GetMapping("/otp/request")
-    String otp(@RequestParam String email, Model model) {
-        var account = repository.findByEmailIgnoreCase(email.trim());
-        if (account.isEmpty()) {
-            model.addAttribute("error", "Account not found. Please register again.");
-            model.addAttribute("email", email);
-            return "otp";
-        }
-        if (account.get().isMobileVerified()) {
-            model.addAttribute("success", "This mobile number is already verified. Please sign in.");
-            model.addAttribute("email", email);
-            return "login";
-        }
-        model.addAttribute("email", email);
-        model.addAttribute("mobileHint", maskMobile(account.get().getMobile()));
-        model.addAttribute("providerReady", msg91OtpService.isConfigured() || devOtpMode);
-        return "otp";
-    }
-
-    @PostMapping("/otp/request")
-    String sendOtp(@RequestParam String email, Model model) {
-        var account = repository.findByEmailIgnoreCase(email.trim());
-        if (account.isEmpty()) {
-            model.addAttribute("error", "Account not found. Please register again.");
-            model.addAttribute("email", email);
-            return "otp";
-        }
-        UserAccount user = account.get();
-        model.addAttribute("email", user.getEmail());
-        model.addAttribute("mobileHint", maskMobile(user.getMobile()));
-
-        if (user.isMobileVerified()) {
-            model.addAttribute("success", "Your mobile number is already verified. Please sign in.");
-            return "login";
-        }
-        if (user.getOtpLastSentAt() != null) {
-            long secondsSinceLastSend = Instant.now().getEpochSecond() - user.getOtpLastSentAt().getEpochSecond();
-            if (secondsSinceLastSend < RESEND_COOLDOWN_SECONDS) {
-                model.addAttribute("error", "Please wait " + (RESEND_COOLDOWN_SECONDS - secondsSinceLastSend)
-                        + " seconds before requesting another OTP.");
-                return "otp";
-            }
-        }
-
-        try {
-            if (msg91OtpService.isConfigured()) {
-                msg91OtpService.sendOtp(user.getMobile());
-                user.setOtpHash(null);
-                user.setOtpExpiry(Instant.now().plusSeconds(OTP_EXPIRY_SECONDS));
-                model.addAttribute("success", "OTP sent to " + maskMobile(user.getMobile()) + ". It is valid for 5 minutes.");
-            } else if (devOtpMode) {
-                String code = String.format("%06d", random.nextInt(1_000_000));
-                user.setOtpHash(passwordEncoder.encode(code));
-                user.setOtpExpiry(Instant.now().plusSeconds(OTP_EXPIRY_SECONDS));
-                model.addAttribute("devOtp", code);
-                model.addAttribute("success", "Development OTP generated (5-minute expiry).");
-            } else {
-                model.addAttribute("error", "SMS verification is not configured. Please contact ASMJ Ride support.");
-                model.addAttribute("providerReady", false);
-                return "otp";
-            }
-            user.setOtpLastSentAt(Instant.now());
-            repository.save(user);
-        } catch (IllegalStateException | IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
-        }
-        model.addAttribute("providerReady", msg91OtpService.isConfigured() || devOtpMode);
-        return "otp";
-    }
-
-    @PostMapping("/otp/verify")
-    String verifyOtp(@RequestParam String email, @RequestParam String otp, Model model) {
-        var account = repository.findByEmailIgnoreCase(email.trim());
-        if (account.isEmpty()) {
-            model.addAttribute("error", "Account not found.");
-            model.addAttribute("email", email);
-            return "otp";
-        }
-        UserAccount user = account.get();
-        model.addAttribute("email", user.getEmail());
-        model.addAttribute("mobileHint", maskMobile(user.getMobile()));
-
-        if (user.isMobileVerified()) {
-            model.addAttribute("success", "Mobile already verified. Please sign in.");
-            return "login";
-        }
-        if (user.getOtpExpiry() == null || Instant.now().isAfter(user.getOtpExpiry())) {
-            model.addAttribute("error", "OTP has expired. Please request a new OTP.");
-            return "otp";
-        }
-
-        boolean verified;
-        try {
-            if (msg91OtpService.isConfigured()) {
-                verified = msg91OtpService.verifyOtp(user.getMobile(), otp);
-            } else {
-                verified = devOtpMode && user.getOtpHash() != null && otp != null
-                        && passwordEncoder.matches(otp.trim(), user.getOtpHash());
-            }
-        } catch (IllegalStateException | IllegalArgumentException ex) {
-            model.addAttribute("error", ex.getMessage());
-            return "otp";
-        }
-
-        if (!verified) {
-            model.addAttribute("error", "Invalid OTP. Please check the code and try again.");
-            return "otp";
-        }
-
-        user.setMobileVerified(true);
-        user.setOtpHash(null);
-        user.setOtpExpiry(null);
-        repository.save(user);
-        model.addAttribute("success", "Mobile verified successfully. You can now sign in.");
-        return "login";
+        return "redirect:/verify-mobile?email=" + java.net.URLEncoder.encode(normalizedEmail, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     @GetMapping("/dashboard")
@@ -200,8 +143,8 @@ public class AuthController {
                 : user.getRole().equals("DRIVER") ? "/driver" : "/partner");
     }
 
-    private String maskMobile(String mobile) {
-        if (mobile == null || mobile.length() < 4) return "your registered mobile";
-        return "******" + mobile.substring(mobile.length() - 4);
+    private void clearActiveCode(UserAccount user) {
+        user.setManualMobileCodeHash(null);
+        user.setManualMobileCodeExpiresAt(null);
     }
 }
