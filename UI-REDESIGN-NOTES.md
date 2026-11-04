@@ -1,26 +1,23 @@
-# ASMJ Ride UI refresh
+# ASMJ Ride UI Redesign v2
 
-This update refreshes the shared presentation layer while retaining the existing Spring Boot controllers, Thymeleaf model bindings, routes, forms, CSRF fields, and ride/payment workflows.
+This update is a more substantial visual redesign than the previous UI refresh.
 
-## Included
-- Unified navy, teal and white visual system with responsive page backgrounds, cards, form controls, buttons, tables, alerts and typography.
-- Consistent ASMJ Ride brand treatment and responsive header navigation.
-- Collapsible mobile navigation for public, customer, driver/partner and admin headers.
-- Clear, consistently styled POST logout controls on authenticated navigation, including the support page.
-- Shared footer on all HTML pages and branded top navigation on sign-in, registration, verification and error pages.
-- Small accessible navigation toggle script; no new JavaScript framework or backend dependency.
+## Visual changes
+- Replaced the previous light-blue styling with a high-contrast midnight navy, teal and mint visual identity.
+- Reworked the public landing page into a dark gradient hero with route illustration, primary calls to action and three feature cards.
+- Redesigned application headers, navigation links, user chips and logout controls.
+- Added a responsive collapsible navigation menu for smaller screens.
+- Reworked form controls, booking forms, buttons, alerts, ride cards, data tables and page panels.
+- Redesigned the footer with a branded dark treatment.
+- Added dashboard-style metric tiles on the admin analytics page.
+- Added page-specific body classes for future page-level refinements.
+- Updated stylesheet cache-busting version to `20261104-ui-redesign-v2`.
 
-## Deliberately unchanged
-- Authentication and authorization rules, CSRF protection, MongoDB models/repositories, ride booking, dispatch, payments, uploads, Cloudinary and manual mobile verification logic.
-- Render environment variables and MongoDB connection URI.
-
-## Deployment
-Replace the project files with this ZIP's contents, preserving the local `.git` directory if deploying from an existing clone. Commit and push; Render can then deploy the update.
-
-The previously observed MongoDB error (`No write concern mode named 'majority}'`) is an environment/configuration issue and is not changed by this UI-only update. Correct the extra `}` in the Render `MONGODB_URI` separately before retesting writes such as issuing mobile-verification codes.
+## Functionality preservation
+- Existing Spring MVC routes, Thymeleaf expressions, form actions, CSRF fields, inputs, booking logic, authentication, manual mobile verification, Cloudinary integration and MongoDB models are retained.
+- No Java backend or database model files were changed as part of this UI-only update.
 
 ## Validation
 - ZIP integrity checked after packaging.
-- POM XML and Render YAML syntax parsed successfully.
-- Template structure and shared footer/style/script references checked.
-- Maven compilation and live Render/browser testing were not run in this environment.
+- Template checks performed for stylesheet references, navigation toggle hooks, CSRF form fields and presence of existing route/action references.
+- Maven compile and live Render browser testing were not performed in this environment. Please verify the deployed UI in desktop and mobile browsers.
