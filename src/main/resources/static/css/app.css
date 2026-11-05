@@ -232,3 +232,49 @@ form{min-width:0;max-width:100%}.booking{min-width:0}.booking>*{min-width:0}.inl
   .site-footer .footer-links{gap:6px}
   .site-footer .footer-links a,.site-footer .footer-links .footer-logout button{padding-inline:8px;font-size:10px}
 }
+
+
+/* ASMJ Ride release v2: clear review controls and estimate/search panels */
+.page-admin-uploads .review-card{display:block;align-items:stretch;gap:14px;margin:14px 0;padding:18px}
+.page-admin-uploads .review-owner{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;width:100%;padding-bottom:12px;border-bottom:1px solid #e6edf2}
+.page-admin-uploads .review-owner>b{font-size:15px}
+.page-admin-uploads .review-asset{display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,.9fr);gap:18px;width:100%;padding:15px 0;border-bottom:1px solid #edf1f4}
+.page-admin-uploads .review-asset:last-child{border-bottom:0}
+.page-admin-uploads .review-asset-info{display:grid;align-content:start;justify-items:start;gap:7px;min-width:0}
+.page-admin-uploads .review-asset-info a{font-weight:800}
+.page-admin-uploads .review-asset-info small{color:#65758a}
+.page-admin-uploads .review-status{display:inline-flex;padding:4px 9px;border-radius:999px;background:#edf2f7;color:#425466;font-size:10px;font-weight:900;letter-spacing:.5px}
+.page-admin-uploads .review-status.is-approved{background:#e5f7ef;color:#08784e}
+.page-admin-uploads .review-status.is-rejected{background:#fff0f0;color:#b42318}
+.page-admin-uploads .review-status.is-pending{background:#fff7e6;color:#9a6700}
+.page-admin-uploads .review-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);align-items:end;gap:9px;margin:0!important;padding:12px;border:1px solid #e2eaf0;border-radius:14px;background:#f8fafc}
+.page-admin-uploads .review-form label{display:grid;gap:5px;color:#425466;font-size:11px;font-weight:850}
+.page-admin-uploads .review-form select,.page-admin-uploads .review-form textarea{width:100%;min-width:0;max-width:100%;min-height:42px;padding:9px 10px;border:1px solid #d5e0e8;border-radius:9px;background:#fff;color:#172b43;font:inherit;font-size:13px}
+.page-admin-uploads .review-form textarea{min-height:42px;resize:vertical}
+.page-admin-uploads .review-form .btn{grid-column:1/-1;width:100%}
+.page-admin-uploads .vehicle-status-form{display:flex;align-items:end;gap:10px;padding:0;border:0;background:transparent}
+.page-admin-uploads .vehicle-status-form label{min-width:190px}
+.route-estimate{grid-column:1/-1;padding:17px;border:1px solid #cfe6e1;border-radius:16px;background:linear-gradient(135deg,#f1fbf8,#f2f7ff)}
+.route-estimate h3{margin:0 0 8px;color:#123b4c}
+.route-estimate .estimate-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.route-estimate .estimate-value{padding:11px;border-radius:11px;background:#fff;border:1px solid #dcebe8}
+.route-estimate .estimate-value small{display:block;color:#64748b;font-size:11px}
+.route-estimate .estimate-value strong{display:block;color:#087f70;font-size:20px}
+.route-estimate .estimate-note{margin:10px 0 0;color:#52677c;font-size:12px}
+.vehicle-search{grid-column:1/-1;padding:16px;border:1px solid #dce6ef;border-radius:16px;background:#fff}
+.vehicle-search-results{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.vehicle-option{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid #dbe5ec;border-radius:12px;background:#f9fbfc}
+.vehicle-option input{width:20px;min-width:20px;min-height:20px;margin:2px 0}
+.vehicle-option strong{display:block}
+.vehicle-option small{display:block;color:#64748b}
+@media(max-width:640px){
+ .page-admin-uploads .review-card{padding:13px}
+ .page-admin-uploads .review-asset{grid-template-columns:minmax(0,1fr);gap:10px}
+ .page-admin-uploads .review-form{grid-template-columns:minmax(0,1fr)}
+ .page-admin-uploads .review-form .btn{grid-column:auto}
+ .page-admin-uploads .vehicle-status-form{display:grid;width:100%}
+ .page-admin-uploads .vehicle-status-form label{min-width:0}
+ .route-estimate .estimate-values{grid-template-columns:1fr 1fr}
+}
+
+[hidden]{display:none!important}

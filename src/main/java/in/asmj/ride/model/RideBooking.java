@@ -9,6 +9,7 @@ import java.util.List;
 public class RideBooking {
  @Id private String id;
  private String customerId, customerName, customerMobile, pickup, destination, category, tripType, status="REQUESTED", paymentMethod="CASH", assignedDriverId, assignedDriverName, assignedVehicleId, assignedVehicleNumber, dispatchNote;
+ private String requestedVehicleId, requestedVehicleNumber; private boolean fareEstimateAccepted; private Instant fareEstimateAcceptedAt;
  private String journeyType="ONE_WAY", pickupCityId, pickupCity, pickupPinCode, destinationCityId, destinationCity, destinationPinCode, returnLegStatus="NOT_APPLICABLE", returnAssignedDriverId, returnAssignedDriverName, returnAssignedVehicleId, returnAssignedVehicleNumber, returnPickupOtp;
  private LocalDateTime returnAt; private Instant returnTripStartedAt, returnTripCompletedAt; private double returnActualDistanceKm, returnFinalFare;
  private double estimatedDistanceKm, estimatedFare, actualDistanceKm, finalFare, currentDriverLatitude, currentDriverLongitude;
@@ -19,6 +20,7 @@ public class RideBooking {
  public List<TripStatusEvent> getStatusHistory(){return statusHistory;} public void setStatusHistory(List<TripStatusEvent> v){statusHistory=v==null?new ArrayList<>():v;}
  public void addStatusEvent(String from,String to,String actor,String note){if(statusHistory==null)statusHistory=new ArrayList<>();statusHistory.add(new TripStatusEvent(from,to,actor,note,Instant.now()));}
 
+ public String getRequestedVehicleId(){return requestedVehicleId;} public void setRequestedVehicleId(String v){requestedVehicleId=v;} public String getRequestedVehicleNumber(){return requestedVehicleNumber;} public void setRequestedVehicleNumber(String v){requestedVehicleNumber=v;} public boolean isFareEstimateAccepted(){return fareEstimateAccepted;} public void setFareEstimateAccepted(boolean v){fareEstimateAccepted=v;} public Instant getFareEstimateAcceptedAt(){return fareEstimateAcceptedAt;} public void setFareEstimateAcceptedAt(Instant v){fareEstimateAcceptedAt=v;}
  public String getJourneyType(){return journeyType;} public void setJourneyType(String v){journeyType=v;}
  public String getPickupCityId(){return pickupCityId;} public void setPickupCityId(String v){pickupCityId=v;} public String getPickupCity(){return pickupCity;} public void setPickupCity(String v){pickupCity=v;}
  public String getPickupPinCode(){return pickupPinCode;} public void setPickupPinCode(String v){pickupPinCode=v;} public String getDestinationCityId(){return destinationCityId;} public void setDestinationCityId(String v){destinationCityId=v;} public String getDestinationCity(){return destinationCity;} public void setDestinationCity(String v){destinationCity=v;} public String getDestinationPinCode(){return destinationPinCode;} public void setDestinationPinCode(String v){destinationPinCode=v;}

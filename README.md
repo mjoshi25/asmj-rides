@@ -127,3 +127,17 @@ See [SUPPORT-CHAT-IMPLEMENTATION.md](SUPPORT-CHAT-IMPLEMENTATION.md) for the adm
 
 ## Phases 5–8 update
 See `PHASE-5-8-IMPLEMENTATION.md` for fleet-owner dashboard and trip assignment, admin trip status/audit controls, round-trip payment allocation and independent settlements, analytics filters, and CSV export.
+
+
+## Release update: route estimates, vehicle search, notifications and document review
+
+### Configure route distances before taking bookings
+The application intentionally does not guess road distances from city names. Admin users should open **Admin → Locations** and add an estimated one-way road distance for each supported city pair. You may enter optional source/destination PIN codes for a more specific route; a city-to-city route without PIN codes acts as the fallback. Reverse-direction estimates are also supported. If no route is configured, the customer can enter an approximate one-way distance and the fare preview will clearly identify it as manual.
+
+The customer booking form previews total distance and estimated fare (including round-trip distance) before submission and requires the customer to confirm the estimate. The final fare remains based on actual trip data.
+
+### Vehicle search and request notifications
+Customers can search approved vehicles by pickup city, category and journey time. New vehicle registrations include an operating/pickup city; legacy vehicles without a configured operating city remain visible but are labelled as not configured. Availability checks consider requested/assigned vehicles, active trips, scheduled start times and round-trip return windows. A selected vehicle is attached to the request; the driver or fleet owner must still accept/assign it. Fleet owners see open requests matching their approved fleet categories. New ride requests generate in-app notifications for admins and relevant vehicle owners/drivers; assignment generates a customer notification. Open **Notifications** from the role dashboard to review them. These are in-app notifications, not SMS or email.
+
+### Document review
+Admin → Documents now has individual approve/reject/pending controls for partner documents, vehicle documents and vehicle photos. Rejection requires a review note, which is shown to the partner. Overall vehicle approval requires at least one verified photo plus verified RC and insurance documents.
