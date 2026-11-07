@@ -21,8 +21,6 @@ services:
         sync: false
       - key: UPLOAD_MAX_BYTES
         value: "8388608"
-      - key: DEMO_SEED_ENABLED
-        value: "false"
       - key: MONGODB_URI
         sync: false
       - key: ADMIN_USERNAME

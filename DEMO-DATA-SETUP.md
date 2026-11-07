@@ -9,7 +9,7 @@ Set these values on the staging service:
 - `DEMO_SEED_ENABLED=true`
 - `DEMO_SEED_PASSWORD` = a strong password of at least 12 characters, chosen by the administrator
 
-Restart/deploy the service. The seed is idempotent: reserved demo accounts and vehicle registrations are repaired to the expected fictional test configuration; existing demo passwords are not reset. The seeder is also excluded under the `prod` and `production` Spring profiles. After the initial seed, set `DEMO_SEED_ENABLED=false` and redeploy. Disabling the seeder does not delete already-created demo records; remove them manually from the test database when finished.
+Restart/deploy the service. The seed is idempotent: existing demo email accounts and vehicle registration numbers are not overwritten. After the initial seed, set `DEMO_SEED_ENABLED=false` and redeploy. Disabling the seeder does not delete already-created demo records; remove them manually from the test database when finished.
 
 ## Demo accounts
 
@@ -27,7 +27,7 @@ New demo accounts use the password supplied in `DEMO_SEED_PASSWORD`. Existing de
 | Customer 2 | `demo.customer2@example.invalid` |
 | Customer 3 | `demo.customer3@example.invalid` |
 
-The seeder marks only these fictional test accounts as mobile-verified and approved. It does not create or change the administrator account. The reserved `.invalid` email domain is intentional and cannot receive real email.
+The seeder marks only these fictional test accounts as mobile-verified and approved. It does not create or change the administrator account.
 
 ## Sample vehicles
 
@@ -56,7 +56,7 @@ Do not use these sample accounts or documents for live customer operations.
 | Registration | Category | Initial permitted route pairs |
 |---|---|---|
 | `OD08DEMO001` | CAR | Bhawanipatna ↔ Brahmapur; Bhawanipatna ↔ Bhubaneswar |
-| `OD08DEMO002` | CAR | Bhawanipatna ↔ Kesinga; Kesinga ↔ Sambalpur |
+| `OD08DEMO002` | CAR | Bhawanipatna ↔ Brahmapur; Kesinga ↔ Sambalpur |
 | `OD08DEMO003` | CAR | Junagarh ↔ Bhubaneswar; Bhawanipatna ↔ Sambalpur |
 | `OD08DEMO004` | AUTO | Bhawanipatna ↔ Kesinga |
 | `OD08DEMO005` | BIKE | Junagarh ↔ Kesinga; Bhawanipatna ↔ Kesinga |

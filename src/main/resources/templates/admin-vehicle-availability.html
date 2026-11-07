@@ -1,0 +1,36 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vehicle availability diagnostics · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=ride-release-v2">
+<style>
+.diag-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.diag-form label{display:flex;flex-direction:column;gap:7px;font-weight:600}.diag-form input,.diag-form select{width:100%;min-height:46px;padding:10px;border:1px solid #ccd6df;border-radius:10px}.diag-card{margin:16px 0;padding:18px;border:1px solid #dce4eb;border-radius:14px;background:#fff}.diag-ok{color:#087b58;font-weight:700}.diag-bad{color:#b42318;font-weight:700}.diag-reasons{margin:10px 0;padding-left:22px}.diag-meta{color:#64748b;overflow-wrap:anywhere}.diag-actions{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.diag-actions a{display:inline-block;padding:10px 14px;border-radius:9px;background:#e8f3f8;text-decoration:none}
+</style></head>
+<body>
+<header class="app-header"><b>ASMJ Ride / Availability diagnostics</b><nav class="site-nav"><a href="/admin">Overview</a><a href="/admin/uploads">Documents</a><a href="/admin/locations">Locations</a><a href="/admin/rides">Rides</a></nav></header>
+<main class="panel">
+<h1>Vehicle availability diagnostics</h1>
+<p>Run the same route/category checks used by customer vehicle search. Every registered vehicle is listed with the exact conditions that currently exclude it. This diagnostic checks the immediate next four-hour window.</p>
+<div class="diag-actions"><a href="/admin/uploads">Back to document review</a><a href="/admin">Admin overview</a></div>
+<form method="get" action="/admin/vehicle-availability" class="ride">
+<div class="diag-form">
+<label>Vehicle category<select name="category" required><option value="CAR" th:selected="${category=='CAR'}">Car</option><option value="AUTO" th:selected="${category=='AUTO'}">Auto</option><option value="BIKE" th:selected="${category=='BIKE'}">Bike</option><option value="OTHER" th:selected="${category=='OTHER'}">Other</option></select></label>
+<label>Pickup city<select name="pickupCityId" required><option value="">Select pickup city</option><option th:each="c:${cities}" th:value="${c.id}" th:selected="${c.id==pickupCityId}" th:text="${c.city+' · '+c.district}"></option></select></label>
+<label>Pickup PIN<input name="pickupPinCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required th:value="${pickupPinCode}" placeholder="766001"></label>
+<label>Destination city<select name="destinationCityId" required><option value="">Select destination city</option><option th:each="c:${cities}" th:value="${c.id}" th:selected="${c.id==destinationCityId}" th:text="${c.city+' · '+c.district}"></option></select></label>
+<label>Destination PIN<input name="destinationPinCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required th:value="${destinationPinCode}" placeholder="760004"></label>
+<label>Journey type<select name="journeyType"><option value="ONE_WAY" th:selected="${journeyType=='ONE_WAY'}">One-way</option><option value="ROUND_TRIP" th:selected="${journeyType=='ROUND_TRIP'}">Round trip</option></select></label>
+</div><p><button class="btn" type="submit">Run availability diagnostics</button></p></form>
+<section th:if="${submitted}">
+<h2>Diagnostic results</h2><p th:text="'Vehicles checked: '+${#lists.size(rows)}"></p>
+<article class="diag-card" th:each="r:${rows}">
+<h3 th:text="${r.registration}+' · '+${r.category}"></h3>
+<p><span th:if="${r.eligible}" class="diag-ok">ELIGIBLE — should appear in customer search</span><span th:unless="${r.eligible}" class="diag-bad">EXCLUDED FROM CUSTOMER SEARCH</span></p>
+<p class="diag-meta" th:text="'Vehicle status: '+${r.status}+' · Operational: '+${r.operationalStatus}+' · Owner: '+${r.ownerRole}+' / '+${r.ownerStatus}+' · Mobile verified: '+${r.mobileVerified}"></p>
+<p class="diag-meta" th:text="'Required pickup key: '+${r.pickupKey}+' · Required drop-off key: '+${r.dropKey}"></p>
+<p th:if="${r.driverNote != null}" th:text="${r.driverNote}"></p>
+<ul class="diag-reasons"><li th:each="reason:${r.reasons}" th:text="${reason}"></li></ul>
+</article>
+<p th:if="${#lists.isEmpty(rows)}">No vehicles are registered in the database.</p>
+</section>
+</main>
+<script src="/js/app-ui.js?v=20261104" defer></script>
+</body></html>

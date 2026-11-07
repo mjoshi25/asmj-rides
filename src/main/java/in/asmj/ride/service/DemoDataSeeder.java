@@ -7,12 +7,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.context.annotation.Profile;
 import java.util.*;
 
 /** Creates fictional, clearly watermarked demo accounts and assets only when explicitly enabled. */
 @Component
-@Profile("!prod & !production")
 @ConditionalOnProperty(name="demo.seed.enabled",havingValue="true")
 public class DemoDataSeeder implements CommandLineRunner {
     private final UserAccountRepository users; private final VehicleRepository vehicles;
@@ -50,16 +48,13 @@ public class DemoDataSeeder implements CommandLineRunner {
         user("Demo Customer 2","demo.customer2@example.invalid","0000000008","CUSTOMER",null,List.of());
         user("Demo Customer 3","demo.customer3@example.invalid","0000000009","CUSTOMER",null,List.of());
 
-        List<String> car1Areas=List.of(key(bhawanipatna,"766001"),key(bhubaneswar,"751001"),key(brahmapur,"760004"));
-        List<String> car2Areas=List.of(key(bhawanipatna,"766001"),key(kesinga,"766012"),key(sambalpur,"768001"));
-        List<String> car3Areas=List.of(key(junagarh,"766014"),key(bhubaneswar,"751001"),key(bhawanipatna,"766001"),key(sambalpur,"768001"));
-        List<String> localAreas=List.of(key(bhawanipatna,"766001"),key(kesinga,"766012"));
-        List<String> bikeAreas=List.of(key(junagarh,"766014"),key(kesinga,"766012"),key(bhawanipatna,"766001"));
-        vehicle(fleet1,driver1,"CAR","OD08DEMO001","Demo Compact Sedan",car1Areas,car1Areas,List.of(route(bhawanipatna,brahmapur),route(brahmapur,bhawanipatna),route(bhawanipatna,bhubaneswar),route(bhubaneswar,bhawanipatna)),"demo-car-01");
-        vehicle(fleet1,driver2,"CAR","OD08DEMO002","Demo Family Sedan",car2Areas,car2Areas,List.of(route(bhawanipatna,kesinga),route(kesinga,bhawanipatna),route(kesinga,sambalpur),route(sambalpur,kesinga)),"demo-car-02");
-        vehicle(fleet1,driver3,"CAR","OD08DEMO003","Demo SUV",car3Areas,car3Areas,List.of(route(junagarh,bhubaneswar),route(bhubaneswar,junagarh),route(bhawanipatna,sambalpur),route(sambalpur,bhawanipatna)),"demo-car-03");
-        vehicle(fleet2,driver4,"AUTO","OD08DEMO004","Demo Passenger Auto",localAreas,localAreas,List.of(route(bhawanipatna,kesinga),route(kesinga,bhawanipatna)),"demo-auto-04");
-        vehicle(fleet2,null,"BIKE","OD08DEMO005","Demo Commuter Bike",bikeAreas,bikeAreas,List.of(route(junagarh,kesinga),route(kesinga,junagarh),route(bhawanipatna,kesinga),route(kesinga,bhawanipatna)),"demo-bike-05");
+        List<String> pickups=List.of(key(bhawanipatna,"766001"),key(kesinga,"766012"),key(junagarh,"766014"),key(bhubaneswar,"751001"),key(brahmapur,"760004"),key(sambalpur,"768001"));
+        List<String> drops=List.of(key(bhawanipatna,"766001"),key(kesinga,"766012"),key(junagarh,"766014"),key(bhubaneswar,"751001"),key(brahmapur,"760004"),key(sambalpur,"768001"));
+        vehicle(fleet1,driver1,"CAR","OD08DEMO001","Demo Compact Sedan",pickups,drops,List.of(route(bhawanipatna,brahmapur),route(brahmapur,bhawanipatna),route(bhawanipatna,bhubaneswar),route(bhubaneswar,bhawanipatna)),"demo-car-01");
+        vehicle(fleet1,driver2,"CAR","OD08DEMO002","Demo Family Sedan",pickups,drops,List.of(route(bhawanipatna,brahmapur),route(brahmapur,bhawanipatna),route(kesinga,sambalpur),route(sambalpur,kesinga)),"demo-car-02");
+        vehicle(fleet1,driver3,"CAR","OD08DEMO003","Demo SUV",pickups,drops,List.of(route(junagarh,bhubaneswar),route(bhubaneswar,junagarh),route(bhawanipatna,sambalpur),route(sambalpur,bhawanipatna)),"demo-car-03");
+        vehicle(fleet2,driver4,"AUTO","OD08DEMO004","Demo Passenger Auto",pickups,drops,List.of(route(bhawanipatna,kesinga),route(kesinga,bhawanipatna)),"demo-auto-04");
+        vehicle(fleet2,null,"BIKE","OD08DEMO005","Demo Commuter Bike",pickups,drops,List.of(route(junagarh,kesinga),route(kesinga,junagarh),route(bhawanipatna,kesinga),route(kesinga,bhawanipatna)),"demo-bike-05");
         System.out.println("ASMJ Ride demo seed completed. Demo accounts: 2 fleet owners, 4 drivers, 3 customers; 5 sample vehicles.");
     }
 
@@ -78,24 +73,16 @@ public class DemoDataSeeder implements CommandLineRunner {
         if(u==null){u=new UserAccount();u.setName(name);u.setEmail(email);u.setMobile(mobile);u.setPasswordHash(encoder.encode(password));u.setRole(role);}
         // Repair reserved demo accounts on repeat runs; do not reset existing demo passwords.
         if(u.getDocuments()==null)u.setDocuments(new ArrayList<>());u.setStatus("APPROVED");u.setMobileVerified(true);if(u.getMobileVerifiedAt()==null)u.setMobileVerifiedAt(java.time.Instant.now());u.setMobileVerificationMethod("DEMO_SEED");u.setAvailable("DRIVER".equals(role));if(fleetOwnerId!=null)u.setFleetOwnerId(fleetOwnerId);
-        for(String type:documentTypes){
-            UploadedAsset existing=u.getDocuments().stream().filter(d->type.equals(d.getCategory())).findFirst().orElse(null);
-            if(existing==null||existing.getPublicId()==null||!existing.getPublicId().startsWith("demo:")){
-                u.getDocuments().removeIf(d->type.equals(d.getCategory()));String file=email.substring(0,email.indexOf('@')).replaceFirst("^demo\\.","")+"-"+type.toLowerCase(Locale.ROOT).replace('_','-')+"-sample.pdf";u.getDocuments().add(asset(type,file,"application/pdf"));
-            }else{existing.setVerificationStatus("VERIFIED");existing.setAdminNote("Fictional demo sample — not a real identity, registration, licence or insurance document.");}
-        }
+        for(String type:documentTypes){boolean exists=u.getDocuments().stream().anyMatch(d->type.equals(d.getCategory()));if(!exists){String file=email.substring(0,email.indexOf('@')).replaceFirst("^demo\\.","")+"-"+type.toLowerCase(Locale.ROOT).replace('_','-')+"-sample.pdf";u.getDocuments().add(asset(type,file,"application/pdf"));}}
         return users.save(u);
     }
     private void vehicle(UserAccount owner,UserAccount driver,String category,String reg,String model,List<String> pickups,List<String> drops,List<String> routeKeys,String imageStem){
-        Vehicle v=vehicles.findAll().stream().filter(x->reg.equalsIgnoreCase(x.getRegistrationNumber())).findFirst().orElse(null);if(v==null)v=new Vehicle();else if(!owner.getId().equals(v.getOwnerId()))throw new IllegalStateException("Reserved demo registration already belongs to another owner: "+reg);
+        Vehicle v=vehicles.findAll().stream().filter(x->reg.equalsIgnoreCase(x.getRegistrationNumber())).findFirst().orElse(null);if(v==null)v=new Vehicle();
         if(v.getPhotos()==null)v.setPhotos(new ArrayList<>());if(v.getDocuments()==null)v.setDocuments(new ArrayList<>());v.setOwnerId(owner.getId());v.setCategory(category);v.setRegistrationNumber(reg);v.setModel(model);v.setStatus("APPROVED");v.setOperationalStatus("ACTIVE");v.setAssignedDriverId(driver==null?null:driver.getId());v.setPickupLocationKeys(pickups);v.setDropLocationKeys(drops);v.setAllowedRouteKeys(routeKeys);v.setSupportsOneWay(true);v.setSupportsRoundTrip(true);
         ServiceCity base=cities.findAllByOrderByCityAsc().stream().filter(c->"Bhawanipatna".equals(c.getCity())).findFirst().orElse(null);if(base!=null){v.setBaseCityId(base.getId());v.setBaseCity(base.getCity());}
-        UploadedAsset photo=v.getPhotos().stream().filter(p->"VEHICLE_PHOTO".equals(p.getCategory())).findFirst().orElse(null);
-        if(photo==null||photo.getPublicId()==null||!photo.getPublicId().startsWith("demo:")){v.getPhotos().removeIf(p->"VEHICLE_PHOTO".equals(p.getCategory()));v.getPhotos().add(asset("VEHICLE_PHOTO",imageStem+".svg","image/svg+xml"));}else{photo.setVerificationStatus("VERIFIED");photo.setAdminNote("Fictional demo vehicle illustration — not a real vehicle photograph.");}
-        UploadedAsset rc=v.getDocuments().stream().filter(d->"RC".equals(d.getCategory())).findFirst().orElse(null);
-        if(rc==null||rc.getPublicId()==null||!rc.getPublicId().startsWith("demo:")){v.getDocuments().removeIf(d->"RC".equals(d.getCategory()));v.getDocuments().add(asset("RC",imageStem+"-rc-sample.pdf","application/pdf"));}else{rc.setVerificationStatus("VERIFIED");rc.setAdminNote("Fictional demo sample — not a real vehicle registration certificate.");}
-        UploadedAsset insurance=v.getDocuments().stream().filter(d->"INSURANCE".equals(d.getCategory())).findFirst().orElse(null);
-        if(insurance==null||insurance.getPublicId()==null||!insurance.getPublicId().startsWith("demo:")){v.getDocuments().removeIf(d->"INSURANCE".equals(d.getCategory()));v.getDocuments().add(asset("INSURANCE",imageStem+"-insurance-sample.pdf","application/pdf"));}else{insurance.setVerificationStatus("VERIFIED");insurance.setAdminNote("Fictional demo sample — not an insurance policy.");}
+        if(v.getPhotos().stream().noneMatch(p->"VEHICLE_PHOTO".equals(p.getCategory())))v.getPhotos().add(asset("VEHICLE_PHOTO",imageStem+".svg","image/svg+xml"));
+        if(v.getDocuments().stream().noneMatch(d->"RC".equals(d.getCategory())))v.getDocuments().add(asset("RC",imageStem+"-rc-sample.pdf","application/pdf"));
+        if(v.getDocuments().stream().noneMatch(d->"INSURANCE".equals(d.getCategory())))v.getDocuments().add(asset("INSURANCE",imageStem+"-insurance-sample.pdf","application/pdf"));
         vehicles.save(v);
     }
     private UploadedAsset asset(String category,String filename,String mime){
