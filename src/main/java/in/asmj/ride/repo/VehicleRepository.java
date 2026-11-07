@@ -6,4 +6,5 @@ public interface VehicleRepository extends MongoRepository<Vehicle,String> {
  List<Vehicle> findByOwnerId(String ownerId);
  List<Vehicle> findByOwnerIdAndStatus(String ownerId,String status);
  List<Vehicle> findByStatus(String status);
+ List<Vehicle> findByAssignedDriverId(String assignedDriverId);
 }
