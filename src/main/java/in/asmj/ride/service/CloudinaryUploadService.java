@@ -43,7 +43,7 @@ public class CloudinaryUploadService {
     }
 
     public void delete(UploadedAsset asset) {
-        if(asset==null||blank(asset.getPublicId())||!configured()) return;
+        if(asset==null||blank(asset.getPublicId())||asset.getPublicId().startsWith("demo:")||!configured()) return;
         try { client().uploader().destroy(asset.getPublicId(),ObjectUtils.asMap("resource_type",asset.getResourceType(),"type",asset.getDeliveryType(),"invalidate",true)); }
         catch(Exception ex){ throw new IllegalStateException("Could not remove the Cloudinary file: "+safeMessage(ex),ex); }
     }

@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.*;
 import java.time.*;
 import in.asmj.ride.service.RideNotificationService;
+import in.asmj.ride.service.VehicleReservationLockService;
+import in.asmj.ride.service.DriverAvailabilityService;
 import java.util.stream.Collectors;
 import java.security.SecureRandom;
 
@@ -19,12 +21,14 @@ public class FleetController {
     private final RideBookingRepository rides;
     private final PaymentRecordRepository payments;
     private final RideNotificationService notifications;
+    private final VehicleReservationLockService reservationLocks;
+    private final DriverAvailabilityService driverAvailability;
     private final SecureRandom random=new SecureRandom();
 
     public FleetController(UserAccountRepository users, VehicleRepository vehicles,
                            RideBookingRepository rides, PaymentRecordRepository payments,
-                           RideNotificationService notifications) {
-        this.users=users; this.vehicles=vehicles; this.rides=rides; this.payments=payments; this.notifications=notifications;
+                           RideNotificationService notifications, VehicleReservationLockService reservationLocks, DriverAvailabilityService driverAvailability) {
+        this.users=users; this.vehicles=vehicles; this.rides=rides; this.payments=payments; this.notifications=notifications; this.reservationLocks=reservationLocks; this.driverAvailability=driverAvailability;
     }
 
     @GetMapping("/fleet")
@@ -77,47 +81,92 @@ public class FleetController {
     private boolean vehicleHasOverlap(String vehicleId,RideBooking current){return vehicleHasOverlap(vehicleId,current,false);}
     private boolean vehicleHasOverlap(String vehicleId,RideBooking current,boolean returnLeg){
         LocalDateTime start=returnLeg&&current.getReturnAt()!=null?current.getReturnAt():(current.getScheduledAt()!=null?current.getScheduledAt():LocalDateTime.now());
-        LocalDateTime end=returnLeg?start.plusHours(4):(current.getReturnAt()!=null?current.getReturnAt():start.plusHours(4));
+        LocalDateTime end=returnLeg?start.plusHours(4):(current.getReturnAt()!=null?current.getReturnAt().plusHours(4):start.plusHours(4));
         for(RideBooking other:rides.findAll()){
             if(current.getId().equals(other.getId())||"CANCELLED".equals(other.getStatus()))continue;
-            if("COMPLETED".equals(other.getStatus())&&(!"ROUND_TRIP".equals(other.getJourneyType())||("COMPLETED".equals(other.getReturnLegStatus())||"CANCELLED".equals(other.getReturnLegStatus())||"NOT_APPLICABLE".equals(other.getReturnLegStatus()))))continue;
-            boolean linked=vehicleId.equals(other.getAssignedVehicleId())||vehicleId.equals(other.getRequestedVehicleId())||vehicleId.equals(other.getReturnAssignedVehicleId());
-            if(!linked)continue;
-            boolean inProgress="IN_PROGRESS".equals(other.getStatus())||"IN_PROGRESS".equals(other.getReturnLegStatus());
+            boolean outwardLinked=vehicleId.equals(other.getAssignedVehicleId())||vehicleId.equals(other.getRequestedVehicleId());
+            boolean returnLinked=vehicleId.equals(other.getReturnAssignedVehicleId());
+            if(!outwardLinked&&!returnLinked)continue;
             LocalDateTime now=LocalDateTime.now();
-            LocalDateTime oldStart=inProgress?now:(other.getScheduledAt()!=null?other.getScheduledAt():LocalDateTime.ofInstant(other.getCreatedAt()==null?Instant.now():other.getCreatedAt(),ZoneId.systemDefault()));
-            LocalDateTime oldEnd=other.getReturnAt()!=null?other.getReturnAt():oldStart.plusHours(4);
-            if(inProgress&&oldEnd.isBefore(now.plusHours(4)))oldEnd=now.plusHours(4);
-            if(oldStart.isBefore(end.plusHours(1))&&oldEnd.isAfter(start.minusHours(1)))return true;
+            LocalDateTime bookingStart=other.getScheduledAt()!=null?other.getScheduledAt():LocalDateTime.ofInstant(other.getCreatedAt()==null?Instant.now():other.getCreatedAt(),ZoneId.systemDefault());
+            if(outwardLinked){
+                LocalDateTime busyStart=bookingStart,busyEnd=busyStart.plusHours(4);
+                boolean activeOutward=List.of("ACCEPTED","ASSIGNED","IN_PROGRESS").contains(other.getStatus());
+                if(activeOutward&&("IN_PROGRESS".equals(other.getStatus())||other.getScheduledAt()==null||!busyEnd.isAfter(now))){busyStart=now;busyEnd=now.plusHours(4);}
+                boolean returnStillReserved="ROUND_TRIP".equals(other.getJourneyType())&&other.getReturnAt()!=null&&!List.of("COMPLETED","CANCELLED","NOT_APPLICABLE").contains(other.getReturnLegStatus())&&(other.getReturnAssignedVehicleId()==null||vehicleId.equals(other.getReturnAssignedVehicleId()));
+                if(returnStillReserved){LocalDateTime returnEnd=other.getReturnAt().plusHours(4);if(returnEnd.isBefore(now.plusHours(4)))returnEnd=now.plusHours(4);if(returnEnd.isAfter(busyEnd))busyEnd=returnEnd;}
+                if(busyStart.isBefore(end.plusHours(1))&&busyEnd.isAfter(start.minusHours(1)))return true;
+            }
+            if(returnLinked&&"ROUND_TRIP".equals(other.getJourneyType())&&other.getReturnAt()!=null&&!List.of("COMPLETED","CANCELLED","NOT_APPLICABLE").contains(other.getReturnLegStatus())){
+                LocalDateTime busyStart=other.getReturnAt(),busyEnd=busyStart.plusHours(4);
+                if("IN_PROGRESS".equals(other.getReturnLegStatus())||!busyEnd.isAfter(now)){busyStart=now;busyEnd=now.plusHours(4);}
+                if(busyStart.isBefore(end.plusHours(1))&&busyEnd.isAfter(start.minusHours(1)))return true;
+            }
         }
         return false;
     }
 
-    private boolean hasOtherActiveAssignment(String driverId,String currentRideId){return rides.findByAssignedDriverIdOrderByCreatedAtDesc(driverId).stream().anyMatch(r->!r.getId().equals(currentRideId)&&List.of("ACCEPTED","IN_PROGRESS").contains(r.getStatus()))||rides.findAll().stream().anyMatch(r->!r.getId().equals(currentRideId)&&driverId.equals(r.getReturnAssignedDriverId())&&("ACCEPTED".equals(r.getReturnLegStatus())||"IN_PROGRESS".equals(r.getReturnLegStatus())));}
+
+    private boolean routeCovered(Vehicle v,RideBooking r){
+        String from=r.getPickupCityId()+"::"+r.getPickupPinCode(),to=r.getDestinationCityId()+"::"+r.getDestinationPinCode();
+        if(v.getPickupLocationKeys()==null||v.getDropLocationKeys()==null||v.getAllowedRouteKeys()==null)return false;
+        if(!v.getPickupLocationKeys().contains(from)||!v.getDropLocationKeys().contains(to)||!v.getAllowedRouteKeys().contains(r.getPickupCityId()+">"+r.getDestinationCityId()))return false;
+        if("ROUND_TRIP".equals(r.getJourneyType()))return v.isSupportsRoundTrip()&&v.getPickupLocationKeys().contains(to)&&v.getDropLocationKeys().contains(from)&&v.getAllowedRouteKeys().contains(r.getDestinationCityId()+">"+r.getPickupCityId());
+        return v.isSupportsOneWay();
+    }
+    private boolean vehicleDocsApproved(Vehicle v){return v.getPhotos()!=null&&v.getPhotos().stream().anyMatch(p->"VERIFIED".equals(p.getVerificationStatus()))&&v.getDocuments()!=null&&List.of("RC","INSURANCE").stream().allMatch(t->v.getDocuments().stream().anyMatch(d->t.equals(d.getCategory())&&"VERIFIED".equals(d.getVerificationStatus())));}
 
     @org.springframework.web.bind.annotation.PostMapping("/fleet/rides/{id}/assign-outward")
     public String assignOutward(Authentication authentication, @org.springframework.web.bind.annotation.PathVariable String id,
                                 @org.springframework.web.bind.annotation.RequestParam String driverId,
                                 @org.springframework.web.bind.annotation.RequestParam String vehicleId) {
         UserAccount owner=users.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
-        RideBooking ride=rides.findById(id).orElseThrow();
-        UserAccount driver=users.findById(driverId).orElse(null); Vehicle vehicle=vehicles.findById(vehicleId).orElse(null);
-        if(driver==null||vehicle==null||!"DRIVER".equals(driver.getRole())||!owner.getId().equals(driver.getFleetOwnerId())||!driver.isAvailable()||hasOtherActiveAssignment(driver.getId(),ride.getId())||!driver.isMobileVerified()||!"APPROVED".equals(driver.getStatus())||(!owner.getId().equals(vehicle.getOwnerId())&& !driver.getId().equals(vehicle.getAssignedDriverId()))||(vehicle.getAssignedDriverId()!=null&&!vehicle.getAssignedDriverId().equals(driver.getId())&&users.findById(vehicle.getAssignedDriverId()).map(existingDriver->existingDriver.isAvailable()&&"APPROVED".equals(existingDriver.getStatus())&&existingDriver.isMobileVerified()).orElse(false))||!"APPROVED".equals(vehicle.getStatus())||!ride.getCategory().equals(vehicle.getCategory())||(vehicle.getBaseCityId()!=null&&!vehicle.getBaseCityId().isBlank()&&!vehicle.getBaseCityId().equals(ride.getPickupCityId()))||(ride.getRequestedVehicleId()!=null&&!ride.getRequestedVehicleId().equals(vehicle.getId()))||vehicleHasOverlap(vehicle.getId(),ride)||!"REQUESTED".equals(ride.getStatus())) return "redirect:/fleet?error=assign";
-        String old=ride.getStatus();ride.setAssignedDriverId(driver.getId());ride.setAssignedDriverName(driver.getName());ride.setAssignedVehicleId(vehicle.getId());ride.setAssignedVehicleNumber(vehicle.getRegistrationNumber());ride.setPickupOtp(String.format("%06d",random.nextInt(1_000_000)));
-        ride.addStatusEvent(old,"ACCEPTED",owner.getName(),"Fleet owner assigned outward driver and vehicle");ride.setStatus("ACCEPTED");
-        if("ROUND_TRIP".equals(ride.getJourneyType())&&ride.getReturnAssignedDriverId()==null){ride.setReturnAssignedDriverId(driver.getId());ride.setReturnAssignedDriverName(driver.getName());ride.setReturnAssignedVehicleId(vehicle.getId());ride.setReturnAssignedVehicleNumber(vehicle.getRegistrationNumber());}
-        rides.save(ride);notifications.notifyUser(ride.getCustomerId(),"Driver assigned",driver.getName()+" has been assigned to your ride. Vehicle: "+vehicle.getRegistrationNumber()+".","/customer",ride.getId(),"RIDE_ASSIGNED");return "redirect:/fleet?assigned";
+        if(!"APPROVED".equals(owner.getStatus())||!owner.isMobileVerified())return "redirect:/fleet?error=approval";
+        String rideLock=reservationLocks.tryAcquireRide(id);if(rideLock==null)return "redirect:/fleet?error=assign";
+        String vehicleLock=null,driverLock=null,lockedVehicleId=null;RideBooking ride=null;UserAccount driver=users.findById(driverId).orElse(null);Vehicle vehicle=null;
+        try{
+            ride=rides.findById(id).orElseThrow();
+            if(driver==null||!"DRIVER".equals(driver.getRole())||!owner.getId().equals(driver.getFleetOwnerId())||!"APPROVED".equals(driver.getStatus())||!driver.isMobileVerified()||List.of("IN_PROGRESS","COMPLETED","CANCELLED").contains(ride.getStatus()))return "redirect:/fleet?error=assign";
+            vehicle=vehicles.findById(vehicleId).orElse(null);
+            if(vehicle==null||!owner.getId().equals(vehicle.getOwnerId())||!"APPROVED".equals(vehicle.getStatus())||!"ACTIVE".equals(vehicle.getOperationalStatus())||!vehicleDocsApproved(vehicle)||!routeCovered(vehicle,ride)||!ride.getCategory().equals(vehicle.getCategory())||(ride.getRequestedVehicleId()!=null&&!ride.getRequestedVehicleId().equals(vehicle.getId()))||!"REQUESTED".equals(ride.getStatus()))return "redirect:/fleet?error=assign";
+            LocalDateTime start=ride.getScheduledAt()!=null?ride.getScheduledAt():LocalDateTime.now(),end=ride.getReturnAt()!=null?ride.getReturnAt().plusHours(4):start.plusHours(4);
+            if(!driverAvailability.isAvailable(driver,start,end,ride.getId()))return "redirect:/fleet?error=assign";
+            if(vehicle.getAssignedDriverId()!=null&&!vehicle.getAssignedDriverId().equals(driver.getId())){UserAccount existing=users.findById(vehicle.getAssignedDriverId()).orElse(null);if(existing!=null&&driverAvailability.isAvailable(existing,start,end,ride.getId()))return "redirect:/fleet?error=assign";}
+            lockedVehicleId=vehicle.getId();vehicleLock=reservationLocks.tryAcquire(lockedVehicleId);if(vehicleLock==null)return "redirect:/fleet?error=assign";
+            driverLock=reservationLocks.tryAcquireDriver(driver.getId());if(driverLock==null)return "redirect:/fleet?error=assign";
+            driver=users.findById(driverId).orElseThrow();ride=rides.findById(id).orElseThrow();vehicle=vehicles.findById(lockedVehicleId).orElse(null);
+            if(vehicle==null||!owner.getId().equals(vehicle.getOwnerId())||!owner.getId().equals(driver.getFleetOwnerId())||!"APPROVED".equals(driver.getStatus())||!driver.isMobileVerified()||!"REQUESTED".equals(ride.getStatus())||!driverAvailability.isAvailable(driver,start,end,ride.getId())||(vehicle.getAssignedDriverId()!=null&&!vehicle.getAssignedDriverId().equals(driver.getId())&&users.findById(vehicle.getAssignedDriverId()).map(existing->driverAvailability.isAvailable(existing,start,end,id)).orElse(false))||!"APPROVED".equals(vehicle.getStatus())||!"ACTIVE".equals(vehicle.getOperationalStatus())||!vehicleDocsApproved(vehicle)||!routeCovered(vehicle,ride)||!ride.getCategory().equals(vehicle.getCategory())||(ride.getRequestedVehicleId()!=null&&!ride.getRequestedVehicleId().equals(vehicle.getId()))||vehicleHasOverlap(vehicle.getId(),ride))return "redirect:/fleet?error=assign";
+            String old=ride.getStatus();boolean preferredReturn="ROUND_TRIP".equals(ride.getJourneyType())&&"REQUESTED".equals(ride.getReturnLegStatus())&&(ride.getReturnAssignedDriverId()==null||(Objects.equals(ride.getReturnAssignedDriverId(),ride.getAssignedDriverId())&&Objects.equals(ride.getReturnAssignedVehicleId(),ride.getAssignedVehicleId())));
+            ride.setAssignedDriverId(driver.getId());ride.setAssignedDriverName(driver.getName());ride.setAssignedVehicleId(vehicle.getId());ride.setAssignedVehicleNumber(vehicle.getRegistrationNumber());ride.setPickupOtp(String.format("%06d",random.nextInt(1_000_000)));
+            if(preferredReturn){ride.setReturnAssignedDriverId(driver.getId());ride.setReturnAssignedDriverName(driver.getName());ride.setReturnAssignedVehicleId(vehicle.getId());ride.setReturnAssignedVehicleNumber(vehicle.getRegistrationNumber());}
+            ride.addStatusEvent(old,"ACCEPTED",owner.getName(),"Fleet owner assigned outward driver and vehicle");ride.setStatus("ACCEPTED");rides.save(ride);
+        }finally{if(driverLock!=null&&driver!=null)reservationLocks.releaseDriver(driver.getId(),driverLock);if(vehicleLock!=null&&lockedVehicleId!=null)reservationLocks.release(lockedVehicleId,vehicleLock);reservationLocks.releaseRide(id,rideLock);}
+        notifications.notifyUser(ride.getCustomerId(),"Driver assigned",driver.getName()+" has been assigned to your ride. Vehicle: "+ride.getAssignedVehicleNumber()+".","/customer",ride.getId(),"RIDE_ASSIGNED");return "redirect:/fleet?assigned";
     }
 
     @org.springframework.web.bind.annotation.PostMapping("/fleet/rides/{id}/assign-return")
     public String assignReturn(Authentication authentication, @org.springframework.web.bind.annotation.PathVariable String id,
                                @org.springframework.web.bind.annotation.RequestParam String driverId,
                                @org.springframework.web.bind.annotation.RequestParam String vehicleId) {
-        UserAccount owner=users.findByEmailIgnoreCase(authentication.getName()).orElseThrow();RideBooking ride=rides.findById(id).orElseThrow();
-        UserAccount driver=users.findById(driverId).orElse(null);Vehicle vehicle=vehicles.findById(vehicleId).orElse(null);
-        boolean sameOutward=driver!=null&&driver.getId().equals(ride.getAssignedDriverId());
-        if(!"ROUND_TRIP".equals(ride.getJourneyType())||ride.getReturnAt()==null||!"COMPLETED".equals(ride.getStatus())||!("REQUESTED".equals(ride.getReturnLegStatus())||"ACCEPTED".equals(ride.getReturnLegStatus()))||driver==null||vehicle==null||!"DRIVER".equals(driver.getRole())||!owner.getId().equals(driver.getFleetOwnerId())||!driver.isMobileVerified()||!"APPROVED".equals(driver.getStatus())||(!sameOutward&&!driver.isAvailable())||hasOtherActiveAssignment(driver.getId(),ride.getId())||(!owner.getId().equals(vehicle.getOwnerId())&&!driver.getId().equals(vehicle.getAssignedDriverId()))||!"APPROVED".equals(vehicle.getStatus())||!ride.getCategory().equals(vehicle.getCategory())||vehicleHasOverlap(vehicle.getId(),ride,true)) return "redirect:/fleet?error=returnAssign";
-        String old=ride.getReturnLegStatus();ride.setReturnAssignedDriverId(driver.getId());ride.setReturnAssignedDriverName(driver.getName());ride.setReturnAssignedVehicleId(vehicle.getId());ride.setReturnAssignedVehicleNumber(vehicle.getRegistrationNumber());ride.setReturnPickupOtp(String.format("%06d",random.nextInt(1_000_000)));ride.setReturnLegStatus("ACCEPTED");ride.addStatusEvent("RETURN_"+old,"RETURN_ACCEPTED",owner.getName(),"Fleet owner assigned return driver and vehicle");rides.save(ride);notifications.notifyUser(ride.getCustomerId(),"Return driver assigned",driver.getName()+" has been assigned to your return journey. Vehicle: "+vehicle.getRegistrationNumber()+".","/customer",ride.getId(),"RETURN_ASSIGNED");return "redirect:/fleet?returnAssigned";
+        UserAccount owner=users.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
+        if(!"APPROVED".equals(owner.getStatus())||!owner.isMobileVerified())return "redirect:/fleet?error=approval";
+        String rideLock=reservationLocks.tryAcquireRide(id);if(rideLock==null)return "redirect:/fleet?error=returnAssign";
+        String vehicleLock=null,driverLock=null,lockedVehicleId=null;RideBooking ride=null;UserAccount driver=users.findById(driverId).orElse(null);Vehicle vehicle=null;
+        try{
+            ride=rides.findById(id).orElseThrow();boolean sameOutward=driver!=null&&driver.getId().equals(ride.getAssignedDriverId());
+            if(!"ROUND_TRIP".equals(ride.getJourneyType())||ride.getReturnAt()==null||!"COMPLETED".equals(ride.getStatus())||!("REQUESTED".equals(ride.getReturnLegStatus())||"ACCEPTED".equals(ride.getReturnLegStatus()))||driver==null||!"DRIVER".equals(driver.getRole())||!owner.getId().equals(driver.getFleetOwnerId())||!driver.isMobileVerified()||!"APPROVED".equals(driver.getStatus()))return "redirect:/fleet?error=returnAssign";
+            vehicle=vehicles.findById(vehicleId).orElse(null);
+            if(vehicle==null||!owner.getId().equals(vehicle.getOwnerId())||!"APPROVED".equals(vehicle.getStatus())||!"ACTIVE".equals(vehicle.getOperationalStatus())||!vehicleDocsApproved(vehicle)||!vehicle.isSupportsRoundTrip()||!ride.getCategory().equals(vehicle.getCategory())||!vehicle.getPickupLocationKeys().contains(ride.getDestinationCityId()+"::"+ride.getDestinationPinCode())||!vehicle.getDropLocationKeys().contains(ride.getPickupCityId()+"::"+ride.getPickupPinCode())||!vehicle.getAllowedRouteKeys().contains(ride.getDestinationCityId()+">"+ride.getPickupCityId()))return "redirect:/fleet?error=returnAssign";
+            LocalDateTime start=ride.getReturnAt(),end=start.plusHours(4);
+            if(sameOutward?driverAvailability.hasConflict(driver,start,end,ride.getId()):!driverAvailability.isAvailable(driver,start,end,ride.getId()))return "redirect:/fleet?error=returnAssign";
+            lockedVehicleId=vehicle.getId();vehicleLock=reservationLocks.tryAcquire(lockedVehicleId);if(vehicleLock==null)return "redirect:/fleet?error=returnAssign";
+            driverLock=reservationLocks.tryAcquireDriver(driver.getId());if(driverLock==null)return "redirect:/fleet?error=returnAssign";
+            driver=users.findById(driverId).orElseThrow();ride=rides.findById(id).orElseThrow();vehicle=vehicles.findById(lockedVehicleId).orElse(null);sameOutward=driver.getId().equals(ride.getAssignedDriverId());
+            if(vehicle==null||!owner.getId().equals(vehicle.getOwnerId())||!owner.getId().equals(driver.getFleetOwnerId())||!"COMPLETED".equals(ride.getStatus())||!"ROUND_TRIP".equals(ride.getJourneyType())||!"APPROVED".equals(driver.getStatus())||!driver.isMobileVerified()||(sameOutward?driverAvailability.hasConflict(driver,start,end,ride.getId()):!driverAvailability.isAvailable(driver,start,end,ride.getId()))||!"APPROVED".equals(vehicle.getStatus())||!"ACTIVE".equals(vehicle.getOperationalStatus())||!vehicleDocsApproved(vehicle)||!vehicle.isSupportsRoundTrip()||!ride.getCategory().equals(vehicle.getCategory())||!vehicle.getPickupLocationKeys().contains(ride.getDestinationCityId()+"::"+ride.getDestinationPinCode())||!vehicle.getDropLocationKeys().contains(ride.getPickupCityId()+"::"+ride.getPickupPinCode())||!vehicle.getAllowedRouteKeys().contains(ride.getDestinationCityId()+">"+ride.getPickupCityId())||vehicleHasOverlap(vehicle.getId(),ride,true))return "redirect:/fleet?error=returnAssign";
+            String old=ride.getReturnLegStatus();ride.setReturnAssignedDriverId(driver.getId());ride.setReturnAssignedDriverName(driver.getName());ride.setReturnAssignedVehicleId(vehicle.getId());ride.setReturnAssignedVehicleNumber(vehicle.getRegistrationNumber());ride.setReturnPickupOtp(String.format("%06d",random.nextInt(1_000_000)));ride.setReturnLegStatus("ACCEPTED");ride.addStatusEvent("RETURN_"+old,"RETURN_ACCEPTED",owner.getName(),"Fleet owner assigned return driver and vehicle");rides.save(ride);
+        }finally{if(driverLock!=null&&driver!=null)reservationLocks.releaseDriver(driver.getId(),driverLock);if(vehicleLock!=null&&lockedVehicleId!=null)reservationLocks.release(lockedVehicleId,vehicleLock);reservationLocks.releaseRide(id,rideLock);}
+        notifications.notifyUser(ride.getCustomerId(),"Return driver assigned",driver.getName()+" has been assigned to your return journey. Vehicle: "+ride.getReturnAssignedVehicleNumber()+".","/customer",ride.getId(),"RETURN_ASSIGNED");return "redirect:/fleet?returnAssigned";
     }
+
 
 }

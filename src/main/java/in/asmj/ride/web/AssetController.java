@@ -1,43 +1,46 @@
 package in.asmj.ride.web;
 
-import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.CloudinaryUploadService;
-import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.stereotype.Controller;import org.springframework.ui.Model;import org.springframework.web.bind.annotation.*;import org.springframework.web.server.ResponseStatusException;
+import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.CloudinaryUploadService;import in.asmj.ride.service.VehicleReservationLockService;
+import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.stereotype.Controller;import org.springframework.ui.Model;import org.springframework.web.bind.annotation.*;import org.springframework.web.server.ResponseStatusException;import org.springframework.core.io.ClassPathResource;
 import java.util.*;import java.net.URI;import java.net.http.HttpClient;import java.net.http.HttpRequest;import java.net.http.HttpResponse;import java.time.Duration;
 
 @Controller
 public class AssetController {
- private final UserAccountRepository users;private final VehicleRepository vehicles;private final PaymentRecordRepository payments;private final SupportTicketRepository tickets;private final SafetyReportRepository safety;private final CloudinaryUploadService cloud;
- public AssetController(UserAccountRepository u,VehicleRepository v,PaymentRecordRepository p,SupportTicketRepository t,SafetyReportRepository s,CloudinaryUploadService c){users=u;vehicles=v;payments=p;tickets=t;safety=s;cloud=c;}
+ private final UserAccountRepository users;private final VehicleRepository vehicles;private final ServiceCityRepository cities;private final PaymentRecordRepository payments;private final SupportTicketRepository tickets;private final SafetyReportRepository safety;private final CloudinaryUploadService cloud;private final VehicleReservationLockService reservationLocks;
+ public AssetController(UserAccountRepository u,VehicleRepository v,ServiceCityRepository cities,PaymentRecordRepository p,SupportTicketRepository t,SafetyReportRepository s,CloudinaryUploadService c,VehicleReservationLockService reservationLocks){users=u;vehicles=v;this.cities=cities;payments=p;tickets=t;safety=s;cloud=c;this.reservationLocks=reservationLocks;}
  private UserAccount me(Authentication a){return users.findByEmailIgnoreCase(a.getName()).orElseThrow();}
- @GetMapping("/admin/uploads") public String uploads(Model m){m.addAttribute("users",users.findAll());m.addAttribute("vehicles",vehicles.findAll());m.addAttribute("payments",payments.findAllByOrderByCreatedAtDesc());m.addAttribute("tickets",tickets.findAllByOrderByCreatedAtDesc());m.addAttribute("safetyReports",safety.findAllByOrderByCreatedAtDesc());m.addAttribute("cloudinaryReady",cloud.configured());return "admin-uploads";}
+ @GetMapping("/admin/uploads") public String uploads(Model m){m.addAttribute("users",users.findAll());m.addAttribute("vehicles",vehicles.findAll());m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("payments",payments.findAllByOrderByCreatedAtDesc());m.addAttribute("tickets",tickets.findAllByOrderByCreatedAtDesc());m.addAttribute("safetyReports",safety.findAllByOrderByCreatedAtDesc());m.addAttribute("cloudinaryReady",cloud.configured());return "admin-uploads";}
  @PostMapping("/admin/uploads/{kind}/{ownerId}/{assetId}/verify") public String verify(@PathVariable String kind,@PathVariable String ownerId,@PathVariable String assetId,@RequestParam String decision,@RequestParam(required=false)String note){
   if(!List.of("VERIFIED","REJECTED","PENDING").contains(decision)||note!=null&&note.length()>500||"REJECTED".equals(decision)&&(note==null||note.isBlank()))return "redirect:/admin/uploads?error=reviewNote";
-  if("partner-doc".equals(kind)){
-   UserAccount user=users.findById(ownerId).orElse(null);if(user==null)return "redirect:/admin/uploads?error";
-   UploadedAsset asset=user.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
-   asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision)&&List.of("IDENTITY","DRIVING_LICENCE","BUSINESS_REGISTRATION").contains(asset.getCategory())){user.setStatus("PENDING");user.setAvailable(false);}
-   users.save(user);
-  }else if("vehicle-doc".equals(kind)){
-   Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";
-   UploadedAsset asset=vehicle.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
-   asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision)&&List.of("RC","INSURANCE").contains(asset.getCategory()))vehicle.setStatus("PENDING");
-   vehicles.save(vehicle);
-  }else if("vehicle-photo".equals(kind)){
-   Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";
-   UploadedAsset asset=vehicle.getPhotos().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
-   asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision))vehicle.setStatus("PENDING");
-   vehicles.save(vehicle);
-  }else return "redirect:/admin/uploads?error";
-  return "redirect:/admin/uploads?updated";
+  String vehicleLock=null;
+  try{
+   if("partner-doc".equals(kind)){
+    UserAccount user=users.findById(ownerId).orElse(null);if(user==null)return "redirect:/admin/uploads?error";
+    UploadedAsset asset=user.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
+    asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
+    if(!"VERIFIED".equals(decision)&&List.of("IDENTITY","DRIVING_LICENCE","BUSINESS_REGISTRATION").contains(asset.getCategory())){user.setStatus("PENDING");user.setAvailable(false);}
+    users.save(user);
+   }else if("vehicle-doc".equals(kind)||"vehicle-photo".equals(kind)){
+    vehicleLock=reservationLocks.tryAcquire(ownerId);if(vehicleLock==null)return "redirect:/admin/uploads?error=vehicleBusy";
+    Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";
+    UploadedAsset asset=("vehicle-photo".equals(kind)?vehicle.getPhotos():vehicle.getDocuments()).stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
+    asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
+    if(!"VERIFIED".equals(decision)&&("vehicle-photo".equals(kind)||List.of("RC","INSURANCE").contains(asset.getCategory())))vehicle.setStatus("PENDING");
+    vehicles.save(vehicle);
+   }else return "redirect:/admin/uploads?error";
+   return "redirect:/admin/uploads?updated";
+  }finally{if(vehicleLock!=null)reservationLocks.release(ownerId,vehicleLock);}
  }
  @GetMapping("/files/{kind}/{ownerId}/{assetId}") public ResponseEntity<byte[]> file(Authentication a,@PathVariable String kind,@PathVariable String ownerId,@PathVariable String assetId){
   UserAccount viewer=me(a);UploadedAsset asset=find(kind,ownerId,assetId);
   if(asset==null)throw new ResponseStatusException(HttpStatus.NOT_FOUND);
   if("vehicle-photo".equals(kind)&&"CUSTOMER".equals(viewer.getRole())&&!"VERIFIED".equals(asset.getVerificationStatus()))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
   if(!authorized(viewer,kind,ownerId))throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+  if(asset.getPublicId()!=null&&asset.getPublicId().startsWith("demo:")){
+   String path=asset.getPublicId().substring(5);
+   if(!path.matches("/demo-documents/[A-Za-z0-9._-]+"))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+   try{byte[] bytes=new ClassPathResource(path.substring(1)).getContentAsByteArray();MediaType media=MediaType.APPLICATION_OCTET_STREAM;try{if(asset.getContentType()!=null)media=MediaType.parseMediaType(asset.getContentType());}catch(Exception ignored){}boolean inline=media.getType().equals("image");ContentDisposition disposition=ContentDisposition.builder(inline?"inline":"attachment").filename(asset.getOriginalFilename()==null?"demo-download":asset.getOriginalFilename()).build();return ResponseEntity.ok().contentType(media).contentLength(bytes.length).header(HttpHeaders.CONTENT_DISPOSITION,disposition.toString()).header(HttpHeaders.CACHE_CONTROL,"no-store, private").header("X-Content-Type-Options","nosniff").body(bytes);}catch(Exception ex){throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Demo sample file not found");}
+  }
   String url=cloud.deliveryUrl(asset);if(url==null||url.isBlank())throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Cloudinary is not configured");
   try{
    HttpClient client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(8)).followRedirects(HttpClient.Redirect.NORMAL).build();

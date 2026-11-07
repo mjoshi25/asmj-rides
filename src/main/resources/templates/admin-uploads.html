@@ -10,7 +10,7 @@
 <p class="success" th:if="${param.updated != null}">Review saved successfully.</p>
 <p class="error" th:if="${param.error != null}">Review could not be saved. For rejection, provide a clear reason and try again.</p>
 <p class="error" th:if="${param.vehiclePhotoRequired != null}">At least one vehicle photo must be verified before approving the vehicle.</p>
-<p class="error" th:if="${param.vehicleDocumentsRequired != null}">The RC and insurance documents must both be verified before approving the vehicle.</p>
+<p class="error" th:if="${param.vehicleDocumentsRequired != null}">The RC and insurance documents must both be verified before approving the vehicle.</p><p class="error" th:if="${param.vehicleCoverageRequired != null}">Configure at least one pickup location, drop-off location and permitted route before approving the vehicle.</p><p class="success" th:if="${param.coverageUpdated != null}">Vehicle coverage saved. Review and approve the vehicle again.</p><p class="error" th:if="${param.coverageError != null}">Vehicle coverage could not be saved. Check the selected locations and route pairs.</p>
 
 <h2>Partner documents and profile photos</h2>
 <article class="ride review-card" th:each="u:${users}" th:if="${u.profilePhoto != null or !#lists.isEmpty(u.documents)}">
@@ -36,6 +36,17 @@
    <button class="btn secondary" type="submit">Save vehicle status</button>
   </form>
  </div>
+ <details class="review-coverage"><summary>Configure vehicle pickup, drop-off and permitted routes</summary>
+  <form class="review-form" method="post" th:action="@{'/admin/vehicle/'+${v.id}+'/coverage'}">
+   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+   <label>Pickup locations (select multiple city/PIN combinations)</label><select name="pickupLocations" multiple size="6" required><th:block th:each="c:${cities}"><option th:each="pin:${c.pinCodes}" th:value="${c.id+'::'+pin}" th:selected="${#lists.contains(v.pickupLocationKeys,c.id+'::'+pin)}" th:text="${c.city+' · '+pin}"></option></th:block></select>
+   <label>Drop-off locations (select multiple)</label><select name="dropLocations" multiple size="6" required><th:block th:each="c:${cities}"><option th:each="pin:${c.pinCodes}" th:value="${c.id+'::'+pin}" th:selected="${#lists.contains(v.dropLocationKeys,c.id+'::'+pin)}" th:text="${c.city+' · '+pin}"></option></th:block></select>
+   <label>Permitted city-to-city route pairs</label><small>For round trips, include both directions and include each endpoint in both pickup and drop-off coverage.</small><select name="allowedRouteKeys" multiple size="6" required><th:block th:each="from:${cities}"><option th:each="to:${cities}" th:value="${from.id+'>'+to.id}" th:selected="${#lists.contains(v.allowedRouteKeys,from.id+'>'+to.id)}" th:text="${from.city+' → '+to.city}"></option></th:block></select>
+   <div class="form-row"><label><input type="checkbox" name="supportsOneWay" value="true" th:checked="${v.supportsOneWay}"> Supports one-way</label><label><input type="checkbox" name="supportsRoundTrip" value="true" th:checked="${v.supportsRoundTrip}"> Supports round-trip</label></div>
+   <label>Operational status</label><select name="operationalStatus"><option value="ACTIVE" th:selected="${v.operationalStatus=='ACTIVE'}">Active</option><option value="MAINTENANCE" th:selected="${v.operationalStatus=='MAINTENANCE'}">Under maintenance</option><option value="BLOCKED" th:selected="${v.operationalStatus=='BLOCKED'}">Temporarily unavailable</option></select>
+   <p class="muted">Saving coverage returns the vehicle to PENDING so an administrator must review and approve the changed configuration.</p><button class="btn" type="submit">Save vehicle coverage</button>
+  </form>
+ </details>
  <div class="review-asset" th:each="p:${v.photos}">
   <div class="review-asset-info"><b th:text="${'Vehicle photo · '+p.originalFilename}"></b><span class="review-status" th:classappend="${p.verificationStatus=='VERIFIED'?' is-approved':(p.verificationStatus=='REJECTED'?' is-rejected':' is-pending')}" th:text="${p.verificationStatus}"></span><a th:href="@{'/files/vehicle-photo/'+${v.id}+'/'+${p.id}}" target="_blank" rel="noopener">View vehicle photo</a><small th:if="${p.adminNote != null and !#strings.isEmpty(p.adminNote)}" th:text="'Previous review note: '+${p.adminNote}"></small></div>
   <form class="review-form" method="post" th:action="@{'/admin/uploads/vehicle-photo/'+${v.id}+'/'+${p.id}+'/verify'}">

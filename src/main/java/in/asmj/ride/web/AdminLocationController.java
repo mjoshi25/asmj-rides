@@ -32,14 +32,14 @@ public class AdminLocationController {
 
  @PostMapping("/admin/locations/{id}/toggle") String toggle(@PathVariable String id){ServiceCity c=cities.findById(id).orElseThrow();c.setActive(!c.isActive());c.touch();cities.save(c);return "redirect:/admin/locations";}
 
- @PostMapping("/admin/routes/save") String saveRoute(@RequestParam(required=false) String id,@RequestParam String sourceCityId,@RequestParam(required=false,defaultValue="") String sourcePinCode,@RequestParam String destinationCityId,@RequestParam(required=false,defaultValue="") String destinationPinCode,@RequestParam double distanceKm,@RequestParam(defaultValue="false") boolean active){
+ @PostMapping("/admin/routes/save") String saveRoute(@RequestParam(required=false) String id,@RequestParam String sourceCityId,@RequestParam(required=false,defaultValue="") String sourcePinCode,@RequestParam String destinationCityId,@RequestParam(required=false,defaultValue="") String destinationPinCode,@RequestParam double distanceKm,@RequestParam(required=false)String sourceNote,@RequestParam(defaultValue="false") boolean active){
   ServiceCity from=cities.findById(sourceCityId).filter(ServiceCity::isActive).orElse(null),to=cities.findById(destinationCityId).filter(ServiceCity::isActive).orElse(null);
   if(from==null||to==null||sourcePinCode.isBlank()!=destinationPinCode.isBlank()||from.getId().equals(to.getId())&&sourcePinCode.equals(destinationPinCode)||!Double.isFinite(distanceKm)||distanceKm<1||distanceKm>3000)return "redirect:/admin/locations?routeError";
   if(!sourcePinCode.isBlank()&&!from.getPinCodes().contains(sourcePinCode)||!destinationPinCode.isBlank()&&!to.getPinCodes().contains(destinationPinCode))return "redirect:/admin/locations?routeError";
   RouteDistance r=id==null||id.isBlank()?new RouteDistance():routes.findById(id).orElseThrow();
   r.setSourceCityId(from.getId());r.setSourceCity(from.getCity());r.setSourcePinCode(sourcePinCode);
   r.setDestinationCityId(to.getId());r.setDestinationCity(to.getCity());r.setDestinationPinCode(destinationPinCode);
-  r.setDistanceKm(distanceKm);r.setActive(active);r.touch();routes.save(r);
+  r.setDistanceKm(distanceKm);r.setSourceNote(sourceNote==null?null:sourceNote.trim());r.setActive(active);r.touch();routes.save(r);
   return "redirect:/admin/locations?routeSaved";
  }
 
