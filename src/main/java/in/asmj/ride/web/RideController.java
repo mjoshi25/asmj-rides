@@ -1,5 +1,5 @@
 package in.asmj.ride.web;
-import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.FareCalculator;import in.asmj.ride.service.RideNotificationService;import in.asmj.ride.service.VehicleReservationLockService;
+import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.FareCalculator;import in.asmj.ride.service.RideNotificationService;import in.asmj.ride.service.VehicleReservationLockService;import in.asmj.ride.service.DocumentRequirementService;
 import org.springframework.stereotype.Controller;import org.springframework.ui.Model;import org.springframework.web.bind.annotation.*;import org.springframework.security.core.Authentication;import org.springframework.http.ResponseEntity;
 import java.time.*;import java.util.*;import java.security.SecureRandom;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 @Controller
 public class RideController {
  private static final Logger log=LoggerFactory.getLogger(RideController.class);
- private final UserAccountRepository users; private final RideBookingRepository rides; private final VehicleRepository vehicles; private final FareRuleRepository fareRules; private final FareCalculator fareCalculator; private final ServiceCityRepository cities; private final PaymentRecordRepository payments; private final RouteDistanceRepository routeDistances; private final RideNotificationService notifications; private final VehicleReservationLockService reservationLocks; private final SecureRandom random=new SecureRandom();
- public RideController(UserAccountRepository u,RideBookingRepository r,VehicleRepository v,FareRuleRepository f,FareCalculator c,ServiceCityRepository cities,PaymentRecordRepository payments,RouteDistanceRepository routeDistances,RideNotificationService notifications,VehicleReservationLockService reservationLocks){users=u;rides=r;vehicles=v;fareRules=f;fareCalculator=c;this.cities=cities;this.payments=payments;this.routeDistances=routeDistances;this.notifications=notifications;this.reservationLocks=reservationLocks;}
+ private final UserAccountRepository users; private final RideBookingRepository rides; private final VehicleRepository vehicles; private final FareRuleRepository fareRules; private final FareCalculator fareCalculator; private final ServiceCityRepository cities; private final PaymentRecordRepository payments; private final RouteDistanceRepository routeDistances; private final RideNotificationService notifications; private final VehicleReservationLockService reservationLocks; private final DocumentRequirementService documentRequirements; private final SecureRandom random=new SecureRandom();
+ public RideController(UserAccountRepository u,RideBookingRepository r,VehicleRepository v,FareRuleRepository f,FareCalculator c,ServiceCityRepository cities,PaymentRecordRepository payments,RouteDistanceRepository routeDistances,RideNotificationService notifications,VehicleReservationLockService reservationLocks,DocumentRequirementService documentRequirements){users=u;rides=r;vehicles=v;fareRules=f;fareCalculator=c;this.cities=cities;this.payments=payments;this.routeDistances=routeDistances;this.notifications=notifications;this.reservationLocks=reservationLocks;this.documentRequirements=documentRequirements;}
  private boolean fleetOwnerCanDrive(UserAccount u){return u.isFleetOwnerDriverEnabled() && u.isMobileVerified() && "APPROVED".equals(u.getStatus()) && u.getDocuments()!=null && u.getDocuments().stream().anyMatch(d->"DRIVING_LICENCE".equals(d.getCategory()) && "VERIFIED".equals(d.getVerificationStatus()));}
  private UserAccount me(Authentication a){return users.findByEmailIgnoreCase(a.getName()).orElseThrow();}
  private FareRule fare(){return fareRules.findById("default").orElseGet(()->fareRules.save(new FareRule()));}
@@ -81,10 +81,7 @@ public class RideController {
   if("ROUND_TRIP".equals(journeyType))return v.getPickupLocationKeys().contains(locationKey(destinationCityId,destinationPin))&&v.getDropLocationKeys().contains(locationKey(pickupCityId,pickupPin))&&routes.contains(destinationCityId+">"+pickupCityId);
   return true;
  }
- private boolean documentsApproved(Vehicle v){
-  return v.getPhotos()!=null&&v.getPhotos().stream().anyMatch(p->"VERIFIED".equals(p.getVerificationStatus()))
-   &&v.getDocuments()!=null&&List.of("RC","INSURANCE").stream().allMatch(type->v.getDocuments().stream().anyMatch(d->type.equals(d.getCategory())&&"VERIFIED".equals(d.getVerificationStatus())));
- }
+ private boolean documentsApproved(Vehicle v){ return documentRequirements.verifiedVehicleDocuments(v); }
  private boolean coversReturnRoute(Vehicle v,RideBooking r){
   return v.isSupportsRoundTrip()&&v.getPickupLocationKeys()!=null&&v.getDropLocationKeys()!=null
    &&v.getPickupLocationKeys().contains(locationKey(r.getDestinationCityId(),r.getDestinationPinCode()))

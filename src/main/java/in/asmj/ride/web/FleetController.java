@@ -2,6 +2,7 @@ package in.asmj.ride.web;
 
 import in.asmj.ride.model.*;
 import in.asmj.ride.repo.*;
+import in.asmj.ride.service.DocumentRequirementService;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +28,12 @@ public class FleetController {
     private final VehicleReservationLockService reservationLocks;
     private final SecureRandom random=new SecureRandom();
     private final PasswordEncoder passwordEncoder;
+    private final DocumentRequirementService documentRequirements;
 
     public FleetController(UserAccountRepository users, VehicleRepository vehicles,
                            RideBookingRepository rides, PaymentRecordRepository payments,
-                           RideNotificationService notifications, VehicleReservationLockService reservationLocks, PasswordEncoder passwordEncoder) {
-        this.users=users; this.vehicles=vehicles; this.rides=rides; this.payments=payments; this.notifications=notifications; this.reservationLocks=reservationLocks; this.passwordEncoder=passwordEncoder;
+                           RideNotificationService notifications, VehicleReservationLockService reservationLocks, PasswordEncoder passwordEncoder, DocumentRequirementService documentRequirements) {
+        this.users=users; this.vehicles=vehicles; this.rides=rides; this.payments=payments; this.notifications=notifications; this.reservationLocks=reservationLocks; this.passwordEncoder=passwordEncoder; this.documentRequirements=documentRequirements;
     }
 
     @GetMapping("/fleet")
@@ -89,7 +91,7 @@ public class FleetController {
         UserAccount owner=users.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
         if(!"FLEET_OWNER".equals(owner.getRole()) || !"APPROVED".equals(owner.getStatus()) || !owner.isMobileVerified()) return "redirect:/fleet?error=selfDriver";
         boolean licenceVerified=owner.getDocuments()!=null && owner.getDocuments().stream().anyMatch(d->"DRIVING_LICENCE".equals(d.getCategory()) && "VERIFIED".equals(d.getVerificationStatus()));
-        if(enabled && !licenceVerified) return "redirect:/fleet?error=selfDriverLicence";
+        if(enabled && (!documentRequirements.verifiedUserDocuments(owner) || !licenceVerified)) return "redirect:/fleet?error=selfDriverLicence";
         owner.setFleetOwnerDriverEnabled(enabled); owner.setAvailable(enabled); users.save(owner);
         return "redirect:/fleet?selfDriverUpdated";
     }
@@ -171,7 +173,7 @@ public class FleetController {
         if("ROUND_TRIP".equals(r.getJourneyType()))return v.isSupportsRoundTrip()&&v.getPickupLocationKeys().contains(to)&&v.getDropLocationKeys().contains(from)&&v.getAllowedRouteKeys().contains(r.getDestinationCityId()+">"+r.getPickupCityId());
         return v.isSupportsOneWay();
     }
-    private boolean vehicleDocsApproved(Vehicle v){return v.getPhotos()!=null&&v.getPhotos().stream().anyMatch(p->"VERIFIED".equals(p.getVerificationStatus()))&&v.getDocuments()!=null&&List.of("RC","INSURANCE").stream().allMatch(t->v.getDocuments().stream().anyMatch(d->t.equals(d.getCategory())&&"VERIFIED".equals(d.getVerificationStatus())));}
+    private boolean vehicleDocsApproved(Vehicle v){return documentRequirements.verifiedVehicleDocuments(v);}
 
     @org.springframework.web.bind.annotation.PostMapping("/fleet/rides/{id}/assign-outward")
     public String assignOutward(Authentication authentication, @org.springframework.web.bind.annotation.PathVariable String id,

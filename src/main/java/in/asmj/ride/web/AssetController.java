@@ -1,13 +1,13 @@
 package in.asmj.ride.web;
 
-import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.CloudinaryUploadService;
+import in.asmj.ride.model.*;import in.asmj.ride.repo.*;import in.asmj.ride.service.CloudinaryUploadService;import in.asmj.ride.service.DocumentRequirementService;
 import org.springframework.http.*;import org.springframework.security.core.Authentication;import org.springframework.stereotype.Controller;import org.springframework.ui.Model;import org.springframework.web.bind.annotation.*;import org.springframework.web.server.ResponseStatusException;import org.springframework.core.io.ClassPathResource;
 import java.util.*;import java.net.URI;import java.net.http.HttpClient;import java.net.http.HttpRequest;import java.net.http.HttpResponse;import java.time.Duration;
 
 @Controller
 public class AssetController {
- private final UserAccountRepository users;private final VehicleRepository vehicles;private final ServiceCityRepository cities;private final PaymentRecordRepository payments;private final SupportTicketRepository tickets;private final SafetyReportRepository safety;private final CloudinaryUploadService cloud;
- public AssetController(UserAccountRepository u,VehicleRepository v,ServiceCityRepository cities,PaymentRecordRepository p,SupportTicketRepository t,SafetyReportRepository s,CloudinaryUploadService c){users=u;vehicles=v;this.cities=cities;payments=p;tickets=t;safety=s;cloud=c;}
+ private final UserAccountRepository users;private final VehicleRepository vehicles;private final ServiceCityRepository cities;private final PaymentRecordRepository payments;private final SupportTicketRepository tickets;private final SafetyReportRepository safety;private final CloudinaryUploadService cloud;private final DocumentRequirementService documentRequirements;
+ public AssetController(UserAccountRepository u,VehicleRepository v,ServiceCityRepository cities,PaymentRecordRepository p,SupportTicketRepository t,SafetyReportRepository s,CloudinaryUploadService c,DocumentRequirementService documentRequirements){users=u;vehicles=v;this.cities=cities;payments=p;tickets=t;safety=s;cloud=c;this.documentRequirements=documentRequirements;}
  private UserAccount me(Authentication a){return users.findByEmailIgnoreCase(a.getName()).orElseThrow();}
  @GetMapping("/admin/uploads") public String uploads(Model m){List<UserAccount> allUsers=users.findAll();List<Vehicle> allVehicles=vehicles.findAll();m.addAttribute("users",allUsers);m.addAttribute("vehicles",allVehicles);Map<String,UserAccount> vehicleOwners=new HashMap<>();for(Vehicle vehicle:allVehicles){if(vehicle.getOwnerId()!=null)users.findById(vehicle.getOwnerId()).ifPresent(owner->vehicleOwners.put(vehicle.getId(),owner));}m.addAttribute("vehicleOwners",vehicleOwners);m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("payments",payments.findAllByOrderByCreatedAtDesc());m.addAttribute("tickets",tickets.findAllByOrderByCreatedAtDesc());m.addAttribute("safetyReports",safety.findAllByOrderByCreatedAtDesc());m.addAttribute("cloudinaryReady",cloud.configured());return "admin-uploads";}
  @PostMapping("/admin/uploads/{kind}/{ownerId}/{assetId}/verify") public String verify(@PathVariable String kind,@PathVariable String ownerId,@PathVariable String assetId,@RequestParam String decision,@RequestParam(required=false)String note){
@@ -16,13 +16,13 @@ public class AssetController {
    UserAccount user=users.findById(ownerId).orElse(null);if(user==null)return "redirect:/admin/uploads?error";
    UploadedAsset asset=user.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
    asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision)&&List.of("IDENTITY","DRIVING_LICENCE","BUSINESS_REGISTRATION").contains(asset.getCategory())){user.setStatus("PENDING");user.setAvailable(false);}
+   if(!"VERIFIED".equals(decision)&&documentRequirements.mandatory(user.getRole()).contains(asset.getCategory())){user.setStatus("PENDING");user.setAvailable(false);}
    users.save(user);
   }else if("vehicle-doc".equals(kind)){
    Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";
    UploadedAsset asset=vehicle.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
    asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision)&&List.of("RC","INSURANCE").contains(asset.getCategory()))vehicle.setStatus("PENDING");
+   if(!"VERIFIED".equals(decision)&&documentRequirements.mandatory("VEHICLE").contains(asset.getCategory()))vehicle.setStatus("PENDING");
    vehicles.save(vehicle);
   }else if("vehicle-photo".equals(kind)){
    Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";

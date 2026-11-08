@@ -47,3 +47,13 @@ A full Maven build, MongoDB integration test and live Render/browser test have n
 - Added starting and ending odometer capture for outward and return legs. Actual distance is derived from ending minus starting KM and is used for fare calculation.
 - Added assignment-response authorization for drivers and enabled fleet-owner driver mode routes only for fleet owners who explicitly enabled the mode.
 - Applied the same explicit accept/decline confirmation to fleet-owner return-leg assignments; declined return assignments are released for reassignment.
+
+## Admin-configurable document requirements (November 2026)
+- Added a MongoDB-backed document requirement configuration for drivers, fleet owners, customers and vehicles.
+- Added `/admin/document-requirements` with separate save controls for each role/category.
+- Approval checks now use configured mandatory documents and require their verification; optional documents do not block approval.
+- Vehicle search and fleet assignment document checks now use the same vehicle requirements, while keeping the existing verified vehicle-photo requirement intact.
+- Customer document upload is available for identity and address proof when the administrator enables those requirements.
+- Rejected optional documents do not automatically reset account/vehicle approval; rejected mandatory documents do.
+- Defaults preserve the existing rules: driver identity + driving licence; fleet-owner identity + business registration; vehicle photo + RC + insurance; no mandatory customer documents.
+- Existing approved accounts are not automatically downgraded when an administrator changes requirements; new approval decisions enforce the current configuration.
