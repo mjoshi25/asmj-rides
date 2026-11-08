@@ -57,3 +57,14 @@ A full Maven build, MongoDB integration test and live Render/browser test have n
 - Rejected optional documents do not automatically reset account/vehicle approval; rejected mandatory documents do.
 - Defaults preserve the existing rules: driver identity + driving licence; fleet-owner identity + business registration; vehicle photo + RC + insurance; no mandatory customer documents.
 - Existing approved accounts are not automatically downgraded when an administrator changes requirements; new approval decisions enforce the current configuration.
+
+## Document Master enhancement (2026-11-08)
+- Added configurable document definitions for DRIVER, FLEET_OWNER, CUSTOMER and VEHICLE.
+- Admin can add custom document types, edit display names/descriptions, set mandatory/optional and expiry-date rules, enable/disable types, and delete custom types.
+- Built-in document codes are protected from permanent deletion; disable them instead.
+- Upload dropdowns for partner, customer and vehicle documents now use active configured document definitions.
+- Server-side upload validation rejects inactive/unknown document types and enforces configured future expiry dates.
+- Approval continues to require verification only for active mandatory document types; vehicle photo verification remains mandatory.
+- Existing legacy mandatoryByRole configuration is migrated into document definitions on first load.
+- Document requirement updates retain the latest 100 admin change entries.
+- Existing uploaded document metadata is retained when a custom type is deleted.

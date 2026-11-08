@@ -16,6 +16,7 @@ public class UploadedAsset {
     private long bytes;
     private String verificationStatus = "PENDING";
     private String adminNote;
+    private String expiryDate;
     private Instant uploadedAt = Instant.now();
 
     public String getId(){return id;} public void setId(String v){id=v;}
@@ -29,5 +30,6 @@ public class UploadedAsset {
     public long getBytes(){return bytes;} public void setBytes(long v){bytes=v;}
     public String getVerificationStatus(){return verificationStatus;} public void setVerificationStatus(String v){verificationStatus=v;}
     public String getAdminNote(){return adminNote;} public void setAdminNote(String v){adminNote=v;}
+    public String getExpiryDate(){return expiryDate;} public void setExpiryDate(String v){expiryDate=v;}
     public Instant getUploadedAt(){return uploadedAt;} public void setUploadedAt(Instant v){uploadedAt=v;}
 }

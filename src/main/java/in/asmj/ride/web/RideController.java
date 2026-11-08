@@ -31,7 +31,7 @@ public class RideController {
   return false;
  }
 
- @GetMapping("/customer") String customer(Authentication a,Model m){UserAccount u=me(a);m.addAttribute("name",u.getName());m.addAttribute("user",u);m.addAttribute("rides",rides.findByCustomerIdOrderByCreatedAtDesc(u.getId()));m.addAttribute("fareRule",fare());m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());return "customer";}
+ @GetMapping("/customer") String customer(Authentication a,Model m){UserAccount u=me(a);m.addAttribute("name",u.getName());m.addAttribute("user",u);m.addAttribute("rides",rides.findByCustomerIdOrderByCreatedAtDesc(u.getId()));m.addAttribute("fareRule",fare());m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("customerDocumentDefinitions",documentRequirements.definitions("CUSTOMER").stream().filter(DocumentRequirementConfig.DocumentDefinition::isActive).toList());return "customer";}
 
  private RouteDistance findRoute(String fromCity,String fromPin,String toCity,String toPin){
   List<RouteDistance> all=routeDistances.findAll().stream().filter(RouteDistance::isActive).toList();
