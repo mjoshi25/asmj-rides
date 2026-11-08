@@ -21,11 +21,24 @@ public class PortalController {
     private UserAccount me(Authentication a){return users.findByEmailIgnoreCase(a.getName()).orElseThrow();}
     private void owner(UserAccount u,Vehicle v){if(!u.getId().equals(v.getOwnerId()))throw new ResponseStatusException(HttpStatus.FORBIDDEN);}
 
-    @GetMapping("/partner") String partner(Authentication a,Model m){var u=me(a);m.addAttribute("name",u.getName());m.addAttribute("role",u.getRole());m.addAttribute("user",u);m.addAttribute("vehicles",vehicles.findByOwnerId(u.getId()));m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("cloudinaryReady",uploads.configured());return "partner";}
+    @GetMapping("/partner") String partner(Authentication a,Model m){var u=me(a);m.addAttribute("name",u.getName());m.addAttribute("role",u.getRole());m.addAttribute("user",u);m.addAttribute("vehicles",vehicles.findByOwnerId(u.getId()));m.addAttribute("pendingFleetOwner",u.getPendingFleetOwnerId()==null?null:users.findById(u.getPendingFleetOwnerId()).orElse(null));m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("cloudinaryReady",uploads.configured());return "partner";}
+
+
+    @PostMapping("/partner/fleet-association/respond")
+    String respondFleetAssociation(Authentication a,@RequestParam String decision){
+        UserAccount driver=me(a);
+        if(!"DRIVER".equals(driver.getRole()) || driver.getPendingFleetOwnerId()==null || !"PENDING".equals(driver.getFleetAssociationStatus())) return "redirect:/partner?error=association";
+        if("ACCEPT".equals(decision)){
+            if(driver.getFleetOwnerId()!=null && !driver.getFleetOwnerId().isBlank()) return "redirect:/partner?error=association";
+            driver.setFleetOwnerId(driver.getPendingFleetOwnerId()); driver.setFleetAssociationStatus("ACCEPTED");
+        } else if("DECLINE".equals(decision)){ driver.setFleetAssociationStatus("DECLINED"); }
+        else return "redirect:/partner?error=association";
+        driver.setPendingFleetOwnerId(null); users.save(driver); return "redirect:/partner?associationUpdated";
+    }
 
     @PostMapping("/profile/photo") String profilePhoto(Authentication a,@RequestParam MultipartFile photo){var u=me(a);try{var old=u.getProfilePhoto();var next=uploads.upload(photo,"asmj-ride/profile-photos","PROFILE_PHOTO",false);u.setProfilePhoto(next);users.save(u);safeDelete(old);return redirectFor(u,"?photoUpdated");}catch(RuntimeException ex){return redirectFor(u,"?uploadError="+enc(ex.getMessage()));}}
 
-    @PostMapping("/partner/documents") String partnerDocument(Authentication a,@RequestParam String documentType,@RequestParam MultipartFile file){var u=me(a);List<String> allowed="DRIVER".equals(u.getRole())?List.of("IDENTITY","DRIVING_LICENCE","ADDRESS_PROOF"):List.of("IDENTITY","BUSINESS_REGISTRATION","ADDRESS_PROOF");if(!allowed.contains(documentType))return "redirect:/partner?uploadError=invalidDocument";UploadedAsset asset=null;List<UploadedAsset> replaced=new ArrayList<>();try{asset=uploads.upload(file,"asmj-ride/partner-documents/"+u.getId(),documentType,true);u.getDocuments().removeIf(x->{if(documentType.equals(x.getCategory())){replaced.add(x);return true;}return false;});u.getDocuments().add(asset);u.setStatus("PENDING");u.setAvailable(false);users.save(u);replaced.forEach(this::safeDelete);return "redirect:/partner?documentUploaded";}catch(RuntimeException ex){safeDelete(asset);return "redirect:/partner?uploadError="+enc(ex.getMessage());}}
+    @PostMapping("/partner/documents") String partnerDocument(Authentication a,@RequestParam String documentType,@RequestParam MultipartFile file){var u=me(a);List<String> allowed="DRIVER".equals(u.getRole())?List.of("IDENTITY","DRIVING_LICENCE","ADDRESS_PROOF"):"FLEET_OWNER".equals(u.getRole())?List.of("IDENTITY","BUSINESS_REGISTRATION","ADDRESS_PROOF","DRIVING_LICENCE"):List.of("IDENTITY","BUSINESS_REGISTRATION","ADDRESS_PROOF");if(!allowed.contains(documentType))return "redirect:/partner?uploadError=invalidDocument";UploadedAsset asset=null;List<UploadedAsset> replaced=new ArrayList<>();try{asset=uploads.upload(file,"asmj-ride/partner-documents/"+u.getId(),documentType,true);u.getDocuments().removeIf(x->{if(documentType.equals(x.getCategory())){replaced.add(x);return true;}return false;});u.getDocuments().add(asset);if(!("FLEET_OWNER".equals(u.getRole()) && "DRIVING_LICENCE".equals(documentType))){u.setStatus("PENDING");u.setAvailable(false);}users.save(u);replaced.forEach(this::safeDelete);return "redirect:/partner?documentUploaded";}catch(RuntimeException ex){safeDelete(asset);return "redirect:/partner?uploadError="+enc(ex.getMessage());}}
 
     private List<String> validateLocationKeys(List<String> submitted){
         if(submitted==null||submitted.isEmpty()||submitted.size()>40)throw new IllegalArgumentException("Select at least one and no more than 40 service locations.");

@@ -6,4 +6,5 @@ public interface UserAccountRepository extends MongoRepository<UserAccount,Strin
  Optional<UserAccount> findByEmailIgnoreCase(String email);
  List<UserAccount> findByRoleIn(List<String> roles);
  List<UserAccount> findByRoleAndStatusAndMobileVerified(String role,String status,boolean verified);
+    Optional<UserAccount> findByMobile(String mobile);
 }

@@ -13,6 +13,7 @@ public class RideBooking {
  private String journeyType="ONE_WAY", pickupCityId, pickupCity, pickupPinCode, destinationCityId, destinationCity, destinationPinCode, returnLegStatus="NOT_APPLICABLE", returnAssignedDriverId, returnAssignedDriverName, returnAssignedVehicleId, returnAssignedVehicleNumber, returnPickupOtp;
  private LocalDateTime returnAt; private Instant returnTripStartedAt, returnTripCompletedAt; private double returnActualDistanceKm, returnFinalFare;
  private double estimatedDistanceKm, estimatedFare, actualDistanceKm, finalFare, currentDriverLatitude, currentDriverLongitude;
+ private double startKm, endKm, returnStartKm, returnEndKm;
  private int actualDurationMinutes, waitingMinutes; private String pickupOtp; private Instant driverLocationUpdatedAt, tripStartedAt, tripCompletedAt; private double cancellationCharge;
  private LocalDateTime scheduledAt;
  private Instant createdAt=Instant.now(), updatedAt=Instant.now();
@@ -42,6 +43,7 @@ public class RideBooking {
  public double getEstimatedDistanceKm(){return estimatedDistanceKm;} public void setEstimatedDistanceKm(double v){estimatedDistanceKm=v;}
  public double getEstimatedFare(){return estimatedFare;} public void setEstimatedFare(double v){estimatedFare=v;}
  public LocalDateTime getScheduledAt(){return scheduledAt;} public void setScheduledAt(LocalDateTime v){scheduledAt=v;}
+ public double getStartKm(){return startKm;} public void setStartKm(double v){startKm=v;} public double getEndKm(){return endKm;} public void setEndKm(double v){endKm=v;} public double getReturnStartKm(){return returnStartKm;} public void setReturnStartKm(double v){returnStartKm=v;} public double getReturnEndKm(){return returnEndKm;} public void setReturnEndKm(double v){returnEndKm=v;}
  public double getActualDistanceKm(){return actualDistanceKm;} public void setActualDistanceKm(double v){actualDistanceKm=v;}
  public double getFinalFare(){return finalFare;} public void setFinalFare(double v){finalFare=v;}
  public int getActualDurationMinutes(){return actualDurationMinutes;} public void setActualDurationMinutes(int v){actualDurationMinutes=v;}

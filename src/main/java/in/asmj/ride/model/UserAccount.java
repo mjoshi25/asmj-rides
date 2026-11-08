@@ -11,8 +11,10 @@ import java.util.List;
 public class UserAccount {
     @Id private String id;
     private String name, email, mobile, passwordHash, role, status = "PENDING";
-    private boolean mobileVerified, available;
+    private boolean mobileVerified, available, fleetOwnerDriverEnabled;
     private String fleetOwnerId;
+    private String pendingFleetOwnerId;
+    private String fleetAssociationStatus;
     private UploadedAsset profilePhoto;
     private List<UploadedAsset> documents = new ArrayList<>();
     private Instant createdAt = Instant.now();
@@ -45,8 +47,14 @@ public class UserAccount {
     public void setStatus(String value) { status = value; }
     public boolean isAvailable() { return available; }
     public void setAvailable(boolean value) { available = value; }
+    public boolean isFleetOwnerDriverEnabled() { return fleetOwnerDriverEnabled; }
+    public void setFleetOwnerDriverEnabled(boolean value) { fleetOwnerDriverEnabled = value; }
     public String getFleetOwnerId() { return fleetOwnerId; }
     public void setFleetOwnerId(String value) { fleetOwnerId = value; }
+    public String getPendingFleetOwnerId() { return pendingFleetOwnerId; }
+    public void setPendingFleetOwnerId(String value) { pendingFleetOwnerId = value; }
+    public String getFleetAssociationStatus() { return fleetAssociationStatus; }
+    public void setFleetAssociationStatus(String value) { fleetAssociationStatus = value; }
     public boolean isMobileVerified() { return mobileVerified; }
     public void setMobileVerified(boolean value) { mobileVerified = value; }
     public UploadedAsset getProfilePhoto() { return profilePhoto; }

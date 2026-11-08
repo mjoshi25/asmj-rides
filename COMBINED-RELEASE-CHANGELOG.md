@@ -37,3 +37,13 @@ The previous release's individual partner-document and vehicle-photo/document re
 - Demo PDF signatures, SVG XML and seed asset-reference checks
 
 A full Maven build, MongoDB integration test and live Render/browser test have not been run in this environment. Render's Docker build stage runs Maven during deployment.
+
+## Fleet driver management and driver-confirmed dispatch (2026-11-08)
+- Added fleet-owner self-driver mode using the existing fleet-owner account. Enabling it requires an approved account, verified mobile and an admin-verified driving licence; the fleet owner can use their own approved fleet vehicles from the driver dashboard.
+- Added fleet-owner creation of driver accounts. Created drivers remain unavailable until manual mobile verification, required document verification and admin approval are complete.
+- Added mobile-number search for existing approved, mobile-verified, unlinked platform drivers. Fleet owners can request association; the driver must explicitly accept or decline before being linked.
+- Added mobile-number filtering to outward and return driver dropdowns and displays driver mobile numbers in options.
+- Fleet-owner outward ride assignment now enters ASSIGNED and notifies the driver. The driver must accept or decline; customer assignment notification is sent only after acceptance. Declining releases the assignment back to REQUESTED.
+- Added starting and ending odometer capture for outward and return legs. Actual distance is derived from ending minus starting KM and is used for fare calculation.
+- Added assignment-response authorization for drivers and enabled fleet-owner driver mode routes only for fleet owners who explicitly enabled the mode.
+- Applied the same explicit accept/decline confirmation to fleet-owner return-leg assignments; declined return assignments are released for reassignment.
