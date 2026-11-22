@@ -23,6 +23,19 @@
       toggle.setAttribute('aria-expanded', String(!expanded));
       header.classList.toggle('nav-open', !expanded);
     });
+    document.addEventListener('click', (event) => {
+      const header = toggle.closest('header');
+      if (header && !header.contains(event.target)) {
+        toggle.setAttribute('aria-expanded', 'false');
+        header.classList.remove('nav-open');
+      }
+    });
+    toggle.closest('header')?.querySelectorAll('.unified-site-nav a').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.closest('header').classList.remove('nav-open');
+      });
+    });
     document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') {
         toggle.setAttribute('aria-expanded', 'false');

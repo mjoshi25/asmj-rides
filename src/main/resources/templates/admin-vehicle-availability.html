@@ -1,11 +1,11 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vehicle availability diagnostics · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase4-brand-20261122">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vehicle availability diagnostics · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase6-unified-navigation-20261122">
 <style>
 .diag-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}.diag-form label{display:flex;flex-direction:column;gap:7px;font-weight:600}.diag-form input,.diag-form select{width:100%;min-height:46px;padding:10px;border:1px solid #ccd6df;border-radius:10px}.diag-card{margin:16px 0;padding:18px;border:1px solid #dce4eb;border-radius:14px;background:#fff}.diag-ok{color:#087b58;font-weight:700}.diag-bad{color:#b42318;font-weight:700}.diag-reasons{margin:10px 0;padding-left:22px}.diag-meta{color:#64748b;overflow-wrap:anywhere}.diag-actions{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}.diag-actions a{display:inline-block;padding:10px 14px;border-radius:9px;background:#e8f3f8;text-decoration:none}
 </style><meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
 <body>
-<header class="app-header"><a class="header-brand" href="/" aria-label="ASMJ Ride home"><img src="/images/asmj-ride-mark.svg" alt="" class="header-brand-mark"><span>ASMJ <strong>Ride</strong></span><small class="header-brand-context">Availability diagnostics</small></a><nav class="site-nav"><a href="/admin">Overview</a><a href="/admin/uploads">Documents</a><a href="/admin/locations">Locations</a><a href="/admin/rides">Rides</a></nav></header>
+<header th:replace="~{fragments/navigation :: authenticatedHeader('ADMIN')}"></header>
 <main class="panel">
 <h1>Vehicle availability diagnostics</h1>
 <p>Run the same route/category checks used by customer vehicle search. Every registered vehicle is listed with the exact conditions that currently exclude it. This diagnostic checks the immediate next four-hour window.</p>
@@ -32,5 +32,5 @@
 <p th:if="${#lists.isEmpty(rows)}">No vehicles are registered in the database.</p>
 </section>
 </main>
-<script src="/js/app-ui.js?v=phase4-brand-20261122" defer></script>
+<script src="/js/app-ui.js?v=phase6-unified-navigation-20261122" defer></script>
 </body></html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="authenticatedHeader(context)" class="app-header unified-app-header">
+  <a class="header-brand" href="/" aria-label="ASMJ Ride home">
+    <img src="/images/asmj-ride-mark.svg" alt="" class="header-brand-mark">
+    <span>ASMJ <strong>Ride</strong></span>
+    <small class="header-brand-context" th:text="${context}">PORTAL</small>
+  </a>
+  <div class="unified-header-actions">
+    <a class="header-icon-link notification-link" href="/notifications" aria-label="Notifications" title="Notifications">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+    </a>
+    <a class="unified-profile-trigger" href="/account" aria-label="Profile and settings" title="Profile and settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+    </a>
+    <button class="nav-toggle unified-nav-toggle" type="button" aria-label="Open navigation menu" aria-controls="asmj-main-navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+  <nav id="asmj-main-navigation" class="site-nav unified-site-nav" aria-label="Main navigation">
+    <a href="/dashboard">Dashboard</a>
+    <a sec:authorize="hasAnyAuthority('CUSTOMER','ROLE_CUSTOMER')" href="/customer">Book a ride</a>
+    <a sec:authorize="hasAnyAuthority('DRIVER','ROLE_DRIVER')" href="/driver">Driver portal</a>
+    <a sec:authorize="hasAnyAuthority('FLEET_OWNER','ROLE_FLEET_OWNER','VEHICLE_OWNER','ROLE_VEHICLE_OWNER')" href="/fleet">Vehicle owner portal</a>
+    <a sec:authorize="hasAnyAuthority('TRAVEL_AGENT','ROLE_TRAVEL_AGENT')" href="/partner">Travel agent portal</a>
+    <a sec:authorize="hasAnyAuthority('TRAVEL_AGENT','ROLE_TRAVEL_AGENT')" href="/agent/authorizations">Partner vehicle access</a>
+    <a sec:authorize="hasAnyAuthority('FLEET_OWNER','ROLE_FLEET_OWNER')" href="/fleet/authorizations">Agent access requests</a>
+    <a sec:authorize="hasAnyAuthority('ADMIN','ROLE_ADMIN')" href="/admin">Admin panel</a>
+    <a sec:authorize="hasAnyAuthority('ADMIN','ROLE_ADMIN')" href="/admin/operations">Trip operations</a>
+    <a href="/payments">Payments</a>
+    <a href="/support">Help &amp; support</a>
+    <a href="/notifications">Notifications</a>
+    <a href="/account">Profile &amp; settings</a>
+    <form method="post" action="/logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="linkbtn logout-btn" type="submit">Sign out</button></form>
+  </nav>
+</header>
+</body>
+</html>
