@@ -2,6 +2,7 @@ package in.asmj.ride.web;
 
 import in.asmj.ride.model.AccountRoleRequest;
 import in.asmj.ride.model.UserAccount;
+import in.asmj.ride.repo.ContactChangeRequestRepository;
 import in.asmj.ride.repo.AccountRoleRequestRepository;
 import in.asmj.ride.repo.UserAccountRepository;
 import in.asmj.ride.service.CloudinaryUploadService;
@@ -26,9 +27,10 @@ public class AccountController {
     private final AccountRoleRequestRepository requests;
     private final CloudinaryUploadService uploads;
     private final DocumentRequirementService documentRequirements;
+    private final ContactChangeRequestRepository contactChanges;
     public AccountController(UserAccountRepository users, AccountRoleRequestRepository requests,
-            CloudinaryUploadService uploads, DocumentRequirementService documentRequirements) {
-        this.users=users; this.requests=requests; this.uploads=uploads; this.documentRequirements=documentRequirements;
+            CloudinaryUploadService uploads, DocumentRequirementService documentRequirements, ContactChangeRequestRepository contactChanges) {
+        this.users=users; this.requests=requests; this.uploads=uploads; this.documentRequirements=documentRequirements; this.contactChanges=contactChanges;
     }
 
     private UserAccount current(Authentication authentication) { return users.findByEmailIgnoreCase(authentication.getName()).orElseThrow(); }
@@ -40,6 +42,8 @@ public class AccountController {
     public String account(Authentication authentication, Model model, HttpSession session) {
         UserAccount user=current(authentication);
         model.addAttribute("user",user);
+        model.addAttribute("contactChangeRequests",contactChanges.findByUserIdOrderByRequestedAtDesc(user.getId()));
+        model.addAttribute("contactChangePending",contactChanges.findFirstByUserIdAndStatusIn(user.getId(),List.of("PENDING_ADMIN_REVIEW","VERIFICATION_PENDING")).orElse(null));
         model.addAttribute("grantedRoles",user.getGrantedRoles());
         model.addAttribute("activeRole",session.getAttribute("ACTIVE_ROLE") == null ? user.getRole() : session.getAttribute("ACTIVE_ROLE"));
         List<AccountRoleRequest> roleRequests=requests.findByUserIdOrderByRequestedAtDesc(user.getId());
