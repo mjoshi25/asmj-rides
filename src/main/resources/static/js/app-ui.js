@@ -10,6 +10,12 @@
       toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
     });
   });
+  document.querySelectorAll('.profile-menu').forEach((menu) => {
+    document.addEventListener('click', (event) => {
+      if (!menu.contains(event.target)) menu.removeAttribute('open');
+    });
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => menu.removeAttribute('open')));
+  });
   document.querySelectorAll('.nav-toggle').forEach((toggle) => {
     toggle.addEventListener('click', () => {
       const header = toggle.closest('header');
