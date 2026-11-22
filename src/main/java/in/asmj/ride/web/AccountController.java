@@ -33,6 +33,9 @@ public class AccountController {
 
     private UserAccount current(Authentication authentication) { return users.findByEmailIgnoreCase(authentication.getName()).orElseThrow(); }
 
+    @GetMapping("/profile")
+    public String profileAlias(Authentication authentication, Model model, HttpSession session) { return account(authentication, model, session); }
+
     @GetMapping("/account")
     public String account(Authentication authentication, Model model, HttpSession session) {
         UserAccount user=current(authentication);

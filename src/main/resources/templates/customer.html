@@ -96,6 +96,6 @@ document.querySelectorAll('.live-track').forEach(box=>{const id=box.dataset.ride
 <span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span>
 <span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span>
 <span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span>
-</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=phase6-unified-navigation-20261122" defer></script><script>
+</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=phase7-account-profile-nav-fix-20261122" defer></script><script>
 document.querySelectorAll('form').forEach(form=>{const select=form.querySelector('select[name="documentType"]');const expiry=form.querySelector('input[name="expiryDate"]');if(!select||!expiry)return;const sync=()=>{const option=select.selectedOptions[0];const required=option&&option.dataset.expiryRequired==='true';expiry.required=!!required;const label=expiry.closest('label');if(label)label.firstChild.textContent=required?'Expiry date (required) ':'Expiry date (if applicable) ';};select.addEventListener('change',sync);sync();});
 </script></body></html>
