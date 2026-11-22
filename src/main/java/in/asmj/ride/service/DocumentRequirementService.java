@@ -19,7 +19,9 @@ public class DocumentRequirementService {
         Map<String,List<DocumentRequirementConfig.DocumentDefinition>> m=new LinkedHashMap<>();
         m.put("DRIVER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","DRIVER",true),def("DRIVING_LICENCE","Driving licence","DRIVER",true),def("ADDRESS_PROOF","Address proof","DRIVER",false))));
         m.put("FLEET_OWNER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","FLEET_OWNER",true),def("BUSINESS_REGISTRATION","Business registration","FLEET_OWNER",true),def("ADDRESS_PROOF","Address proof","FLEET_OWNER",false),def("DRIVING_LICENCE","Driving licence","FLEET_OWNER",false))));
-        m.put("TRAVEL_AGENT",new ArrayList<>(List.of(def("IDENTITY","Identity proof","TRAVEL_AGENT",true),def("BUSINESS_REGISTRATION","Business registration","TRAVEL_AGENT",true),def("ADDRESS_PROOF","Address proof","TRAVEL_AGENT",false))));
+        // Travel Agent documents are optional by default. Admin may explicitly configure
+        // any of these as mandatory from the document-requirements screen.
+        m.put("TRAVEL_AGENT",new ArrayList<>(List.of(def("IDENTITY","Identity proof","TRAVEL_AGENT",false),def("BUSINESS_REGISTRATION","Business registration","TRAVEL_AGENT",false),def("ADDRESS_PROOF","Address proof","TRAVEL_AGENT",false))));
         m.put("CUSTOMER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","CUSTOMER",false),def("ADDRESS_PROOF","Address proof","CUSTOMER",false))));
         m.put("VEHICLE",new ArrayList<>(List.of(def("RC","Registration Certificate (RC)","VEHICLE",true),def("INSURANCE","Insurance","VEHICLE",true),def("PERMIT","Permit","VEHICLE",false),def("FITNESS","Fitness certificate","VEHICLE",false),def("PUC","Pollution certificate (PUC)","VEHICLE",false))));
         return m;
@@ -27,12 +29,30 @@ public class DocumentRequirementService {
     private static DocumentRequirementConfig.DocumentDefinition def(String c,String n,String r,boolean mandatory){return new DocumentRequirementConfig.DocumentDefinition(c,n,r,mandatory);}
     private DocumentRequirementConfig config(){
         DocumentRequirementConfig c=repository.findById("default").orElseGet(DocumentRequirementConfig::new);
+        boolean changed=false;
         if(c.getDefinitions()==null||c.getDefinitions().isEmpty()){
             List<DocumentRequirementConfig.DocumentDefinition> migrated=flattenDefaults();
             Map<String,List<String>> legacy=c.getMandatoryByRole()==null?Map.of():c.getMandatoryByRole();
-            for(var d:migrated){List<String> configured=legacy.get(d.getRole());if(configured!=null)d.setMandatory(configured.contains(d.getCode()));}
-            c.setDefinitions(migrated);c.setId("default");c=repository.save(c);
+            for(var d:migrated){
+                List<String> configured=legacy.get(d.getRole());
+                if(configured!=null)d.setMandatory(configured.contains(d.getCode()));
+                else if("TRAVEL_AGENT".equals(d.getRole()))d.setMandatory(false);
+            }
+            c.setDefinitions(migrated);c.setId("default");changed=true;
+        } else {
+            // Older releases could persist built-in Travel Agent documents as mandatory
+            // even when Admin had never configured any. An explicit saved role list is
+            // authoritative; if there is no admin configuration/audit, migrate those
+            // legacy defaults to optional once.
+            Map<String,List<String>> legacy=c.getMandatoryByRole()==null?Map.of():c.getMandatoryByRole();
+            if(c.getUpdatedBy()==null&&!legacy.containsKey("TRAVEL_AGENT")){
+                for(var d:c.getDefinitions())if("TRAVEL_AGENT".equals(d.getRole())&&d.isMandatory()){d.setMandatory(false);changed=true;}
+            } else if(legacy.containsKey("TRAVEL_AGENT")) {
+                Set<String> configured=new HashSet<>(legacy.getOrDefault("TRAVEL_AGENT",List.of()));
+                for(var d:c.getDefinitions())if("TRAVEL_AGENT".equals(d.getRole())&&d.isMandatory()!=configured.contains(d.getCode())){d.setMandatory(configured.contains(d.getCode()));changed=true;}
+            }
         }
+        if(changed)c=repository.save(c);
         return c;
     }
     private List<DocumentRequirementConfig.DocumentDefinition> flattenDefaults(){List<DocumentRequirementConfig.DocumentDefinition> all=new ArrayList<>();DEFAULTS.values().forEach(all::addAll);return all;}

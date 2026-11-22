@@ -21,6 +21,18 @@ public class PortalController {
     private final CloudinaryUploadService uploads; private final ServiceCityRepository cities; private final DocumentRequirementService documentRequirements; private final TravelAgentProfileRepository agentProfiles; private final AgentVehicleAuthorizationService agentAuthorizations;
     public PortalController(UserAccountRepository u,VehicleRepository v,CloudinaryUploadService c,ServiceCityRepository cities,DocumentRequirementService documentRequirements,TravelAgentProfileRepository agentProfiles,AgentVehicleAuthorizationService agentAuthorizations){users=u;vehicles=v;uploads=c;this.cities=cities;this.documentRequirements=documentRequirements;this.agentProfiles=agentProfiles;this.agentAuthorizations=agentAuthorizations;}
     private UserAccount me(Authentication a){return users.findByEmailIgnoreCase(a.getName()).orElseThrow();}
+
+    /** Returns a precise, user-facing reason why an agent cannot register own-fleet vehicles. */
+    private String agentVehicleBlockReason(UserAccount user, TravelAgentProfile profile){
+        if(profile==null)return "PROFILE_NOT_SUBMITTED";
+        String profileStatus=profile.getVerificationStatus()==null?"PENDING":profile.getVerificationStatus().toUpperCase(Locale.ROOT);
+        if("REJECTED".equals(profileStatus))return "PROFILE_REJECTED";
+        if(!"APPROVED".equals(profileStatus))return "PROFILE_PENDING";
+        if(!profile.isOwnFleetEnabled())return "OWN_FLEET_DISABLED";
+        String roleStatus=user.getRoleStatus("TRAVEL_AGENT");
+        if(!"APPROVED".equalsIgnoreCase(roleStatus==null?"":roleStatus))return "ROLE_PENDING";
+        return null;
+    }
     private void owner(UserAccount u,Vehicle v){
         if(u.getId().equals(v.getOwnerId())) return;
         if(u.getGrantedRoles().contains("TRAVEL_AGENT") && agentAuthorizations.canManage(u.getId(),v.getId(),"MANAGE_LISTING")) return;
@@ -133,7 +145,8 @@ public class PortalController {
         var u=me(a);if(!(u.hasGrantedRole("DRIVER")||u.hasGrantedRole("FLEET_OWNER")||u.hasGrantedRole("TRAVEL_AGENT")))return "redirect:/partner";
         if(u.hasGrantedRole("TRAVEL_AGENT")){
             TravelAgentProfile profile=agentProfiles.findByUserId(u.getId()).orElse(null);
-            if(profile==null || !profile.isOwnFleetEnabled() || !"APPROVED".equals(profile.getVerificationStatus()) || !"APPROVED".equals(u.getStatus())) return "redirect:/agent?agencyApprovalRequired";
+            String blockReason=agentVehicleBlockReason(u,profile);
+            if(blockReason!=null)return "redirect:/agent?agencyApprovalRequired="+blockReason;
         }
         if(!List.of("CAR","AUTO","BIKE","OTHER").contains(category)||registrationNumber==null||registrationNumber.isBlank()||registrationNumber.length()>20)return "redirect:/partner?error=vehicle";
         if(photos==null||photos.stream().filter(f->f!=null&&!f.isEmpty()).count()<1)return "redirect:/partner?uploadError=vehiclePhotoRequired";
@@ -187,8 +200,9 @@ public class PortalController {
         boolean ownVehicle=manager.getId().equals(vehicle.getOwnerId());
         if(manager.hasGrantedRole("TRAVEL_AGENT")){
             TravelAgentProfile profile=agentProfiles.findByUserId(manager.getId()).orElse(null);
-            if(profile==null||!"APPROVED".equals(profile.getVerificationStatus())||!"APPROVED".equals(manager.getStatus()))return "redirect:/agent?agencyApprovalRequired";
-            if(ownVehicle&&!profile.isOwnFleetEnabled())return "redirect:/agent?agencyApprovalRequired";
+            String blockReason=agentVehicleBlockReason(manager,profile);
+            if(blockReason!=null)return "redirect:/agent?agencyApprovalRequired="+blockReason;
+            if(ownVehicle&&!profile.isOwnFleetEnabled())return "redirect:/agent?agencyApprovalRequired=OWN_FLEET_DISABLED";
             if(!ownVehicle&&!agentAuthorizations.canManage(manager.getId(),vehicle.getId(),"ASSIGN_DRIVER"))return "redirect:/partner?error=driverPermission";
         } else if(!ownVehicle) return "redirect:/partner?error=driverPermission";
         var driver=users.findByEmailIgnoreCase(driverEmail).orElse(null);
