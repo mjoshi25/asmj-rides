@@ -604,3 +604,56 @@ body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form
 @media(max-width:900px){header:not(.auth-header){padding:10px 18px}.unified-site-nav{box-shadow:0 16px 30px rgba(10,27,46,.18)}}
 @media(max-width:760px){main{width:calc(100% - 24px);margin:15px auto 30px}.panel{padding:19px 15px;border-radius:16px}.panel h1{font-size:25px}.panel h2{font-size:16px}.ride{padding:14px}.rental-panel{width:calc(100% - 20px);padding:17px 13px}.rental-form{grid-template-columns:1fr}.rental-form button{width:100%}.rental-result-grid{grid-template-columns:1fr}.table-wrap,.admin-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}table{min-width:620px}th,td{padding:11px 10px;font-size:11px}.agency-profile-form{grid-template-columns:1fr!important}.agency-profile-form .form-row{display:grid!important;grid-template-columns:1fr;gap:10px!important}.agency-profile-form .btn{width:100%}.header-brand-context{font-size:9px;margin-left:4px;padding-left:8px}}
 @media(max-width:420px){header:not(.auth-header){padding:9px 12px}.header-brand{font-size:16px}.header-brand-mark{width:30px;height:30px}.unified-header-actions{gap:6px}.header-icon-link,.unified-profile-trigger{width:36px;height:36px}.panel{padding:16px 12px}.ride{padding:12px}.btn,button.btn{width:100%}.actions .btn{width:100%}.inline{align-items:stretch;flex-direction:column}.inline .btn{width:100%}}
+
+
+/* PHASE 17B — commercial portal layout and component system */
+:root{--brand-ink:#10243d;--brand-teal:#079b83;--brand-line:#e4eaf0;--brand-surface:#f5f7fa;--brand-shadow:0 12px 32px rgba(16,36,61,.065)}
+body{background:#f4f6f9;color:#172b43}
+main{width:min(1380px,calc(100% - 56px));margin:30px auto 64px}
+.panel{padding:clamp(24px,3vw,42px);border:1px solid #e5ebf1;border-radius:22px;box-shadow:0 12px 38px rgba(16,36,61,.055);background:#fff}
+.panel h1{font-size:clamp(27px,3vw,38px);line-height:1.15;letter-spacing:-1.15px}
+.panel h2{font-size:19px;letter-spacing:-.35px}
+.panel h3{font-size:15px}
+.panel p{line-height:1.65}
+.ride,.panel>.ride{border:1px solid #e5ebf1;border-radius:16px;background:#fff;box-shadow:0 4px 16px rgba(16,36,61,.035);transition:border-color .18s,box-shadow .18s}
+.ride:hover{transform:none;border-color:#c9ded9;box-shadow:0 8px 24px rgba(16,36,61,.06)}
+.btn,button.btn{min-height:43px;padding:11px 17px;border-radius:10px;font-size:12px;letter-spacing:.1px}
+input,select,textarea{border-radius:10px!important}
+table{border-collapse:separate;border-spacing:0;overflow:hidden}
+th{background:#f3f6f9;color:#43566e}
+.success,.error{padding:11px 14px;border-radius:10px}
+.portal-dashboard{max-width:1380px}
+.portal-hero{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:26px 28px;margin:-2px 0 22px;border-radius:18px;background:linear-gradient(115deg,#10243d 0%,#173a56 68%,#087f76 100%);color:#fff}
+.portal-hero h1{margin:6px 0 7px;color:#fff!important;font-size:clamp(26px,3vw,36px)!important}
+.portal-hero h1:after{display:none}
+.portal-hero p{margin:0;color:#d2e0eb;font-size:13px}
+.portal-eyebrow{font-size:10px;font-weight:850;letter-spacing:1.35px;color:#8de5d0}
+.portal-hero-status{display:flex;flex-direction:column;gap:5px;min-width:180px;padding:15px 17px;border:1px solid rgba(255,255,255,.18);border-radius:13px;background:rgba(255,255,255,.09)}
+.portal-hero-status span:first-child{font-size:10px;color:#c3d4e2;text-transform:uppercase;letter-spacing:.8px;font-weight:800}
+.portal-hero-status strong{font-size:16px;color:#fff}
+.portal-status-pill{align-self:flex-start;margin-top:3px;padding:4px 8px;border-radius:999px;background:rgba(141,229,208,.16);color:#9cf0d9;font-size:9px;font-weight:900;letter-spacing:.65px}
+.portal-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0 0 20px}
+.portal-kpi{display:flex;flex-direction:column;gap:5px;padding:18px 20px;border:1px solid #e5ebf1;border-radius:15px;background:#fff;box-shadow:0 4px 15px rgba(16,36,61,.03)}
+.portal-kpi>span{font-size:11px;font-weight:800;color:#64768a}
+.portal-kpi strong{font:800 25px/1.2 'Manrope',sans-serif;color:#102b46;letter-spacing:-.6px}
+.portal-kpi strong.portal-kpi-status{font-size:17px;color:#078a78}
+.portal-kpi small{font-size:10px;color:#8a98a8}
+.portal-quick-actions{display:flex;flex-wrap:wrap;gap:9px;padding:0 0 22px;border-bottom:1px solid #e9eef3}
+.portal-quick-actions a{display:inline-flex;align-items:center;min-height:38px;padding:9px 13px;border:1px solid #dce7eb;border-radius:9px;background:#f8fbfb;color:#155b59;font-size:11px;font-weight:850}
+.portal-quick-actions a:hover{background:#eaf6f3;border-color:#b9ddd4;text-decoration:none}
+.portal-section-title{margin:25px 0 14px!important;color:#16314d!important;font-size:20px!important}
+.portal-section{display:block!important;width:100%;min-width:0;margin:14px 0!important;padding:22px!important}
+.portal-section h2{margin:0 0 12px!important}
+.page-partner main.portal-dashboard>section.ride:first-of-type{display:block!important;grid-template-columns:none!important}
+.page-partner main.portal-dashboard>section.ride form.agency-profile-form{display:grid!important;grid-template-columns:minmax(0,1fr)!important;max-width:760px!important;width:100%;gap:11px!important;margin:18px 0 0!important}
+.page-partner main.portal-dashboard>section.ride form.agency-profile-form>label{display:grid!important;grid-template-columns:1fr!important;gap:7px!important}
+.page-partner main.portal-dashboard>section.ride form.agency-profile-form .form-row{display:flex!important;flex-wrap:wrap;gap:18px!important}
+.page-partner main.portal-dashboard>section.ride form.agency-profile-form .form-row label{display:flex!important;flex-direction:row!important;align-items:center;gap:8px}
+.page-partner main.portal-dashboard>section.ride form.agency-profile-form .btn{justify-self:start;width:auto!important;min-width:190px}
+.page-partner main.portal-dashboard>section.ride:not(.portal-section){display:block!important}
+.page-partner .ride-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.page-partner .ride-list>.ride{display:block;min-width:0;padding:20px}
+.page-partner .ride-list>.ride form{display:grid;grid-template-columns:1fr!important;max-width:none;width:100%}
+.page-partner .ride-list>.ride form label{min-width:0}
+@media(max-width:850px){main{width:calc(100% - 32px);margin:20px auto 40px}.portal-hero{align-items:flex-start;flex-direction:column}.portal-hero-status{width:100%}.portal-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.page-partner .ride-list{grid-template-columns:1fr}}
+@media(max-width:600px){main{width:calc(100% - 20px);margin:12px auto 28px}.panel{padding:16px 13px;border-radius:15px}.portal-hero{padding:20px 17px;border-radius:14px}.portal-hero h1{font-size:25px!important}.portal-kpis{grid-template-columns:1fr 1fr;gap:8px}.portal-kpi{padding:13px 12px}.portal-kpi strong{font-size:21px}.portal-kpi>span{font-size:10px}.portal-quick-actions{display:grid;grid-template-columns:1fr 1fr}.portal-quick-actions a{justify-content:center;text-align:center;padding:9px 7px}.portal-section{padding:15px!important}.page-partner main.portal-dashboard>section.ride form.agency-profile-form .btn{width:100%!important}.page-partner .ride-list{grid-template-columns:1fr}}
