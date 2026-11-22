@@ -568,3 +568,39 @@ body.page-partner main.panel section.ride form>button{grid-column:1/-1}
 .rental-panel .ride form button,.panel>.ride form button{align-self:end;min-height:44px}
 .eyebrow{font-size:.72rem;letter-spacing:.15em;font-weight:800;color:#0b9d88}
 @media(max-width:700px){.rental-form{grid-template-columns:1fr;gap:13px}.rental-form button{grid-column:auto;width:100%;min-width:0}.rental-panel{margin:12px auto;padding:18px}.rental-panel .ride form,.panel>.ride form{grid-template-columns:1fr}.rental-result-grid{grid-template-columns:1fr}}
+
+/* Phase 17 — ASMJ Ride commercial product UI system (site-wide refresh) */
+:root{--brand-deep:#10243d;--brand-mid:#173b59;--brand-teal:#079b83;--brand-mint:#e9f7f3;--surface:#fff;--surface-soft:#f5f8fb;--stroke:#e3eaf1;--text-primary:#14263d;--text-secondary:#687b90;--elevation-1:0 4px 14px rgba(16,36,61,.045);--elevation-2:0 14px 36px rgba(16,36,61,.075)}
+body{background:#f4f7fa;color:var(--text-primary);font-size:14px;line-height:1.55}
+header:not(.auth-header){min-height:72px;padding:10px clamp(16px,3vw,42px);background:#10243d;box-shadow:0 4px 18px rgba(9,26,45,.16)}
+.header-brand{display:inline-flex;align-items:center;gap:10px;color:#fff!important;font:800 18px 'Manrope',sans-serif;letter-spacing:-.45px;text-decoration:none!important;white-space:nowrap}
+.header-brand-mark{width:34px;height:34px;object-fit:contain}.header-brand strong{color:#4dd4b0}.header-brand-context{margin-left:8px;padding-left:12px;border-left:1px solid rgba(255,255,255,.2);color:#a9c1d5;font-size:10px;font-weight:800;letter-spacing:1.2px}
+.unified-header-actions{display:flex;align-items:center;gap:9px}.header-icon-link,.unified-profile-trigger{display:grid;place-items:center;width:40px;height:40px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.07);color:#fff}.header-icon-link svg,.unified-profile-trigger svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7}.header-profile-photo{width:27px;height:27px;border-radius:50%;object-fit:cover}
+.unified-site-nav{gap:4px}.unified-site-nav>a{padding:9px 11px;border-radius:9px;color:#d8e4ef;font-size:11px;font-weight:750}.unified-site-nav>a:hover,.unified-site-nav>a:focus{background:rgba(255,255,255,.12);color:#fff}
+main{width:min(1320px,calc(100% - 48px));margin:28px auto 52px}
+.panel,.auth{border:1px solid var(--stroke);border-radius:20px;background:#fff;box-shadow:var(--elevation-1)}
+.panel{padding:clamp(22px,3vw,36px)}.panel h1,.auth h1{color:#142b45;font-size:clamp(25px,2.6vw,34px);letter-spacing:-.9px}.panel h1:after{height:3px;width:42px;margin-top:11px}.panel h2{margin-top:26px;color:#1a3552;font-size:18px}.panel h3{color:#1a3552}
+.ride,.panel>.ride,.rental-panel .ride{border:1px solid #e4ebf1;border-radius:15px;background:#fff;box-shadow:var(--elevation-1)}
+.ride:hover{border-color:#d2e4e2;box-shadow:var(--elevation-2)}
+.btn,button.btn{min-height:42px;padding:10px 16px;border-radius:10px;background:#078f7c;box-shadow:none;font-size:12px;font-weight:800}.btn:hover,button.btn:hover{background:#067965;box-shadow:0 6px 15px rgba(7,143,124,.18);transform:translateY(-1px)}.btn.secondary,.secondary{background:#edf4f7;color:#244b64;border:1px solid #dce7ed}.btn.secondary:hover{background:#e3eef2;color:#183f57}.btn.danger,.danger{background:#fff1ef;color:#a82f28;border-color:#f1d4d0}
+input,select,textarea{min-height:44px;border-radius:10px;border-color:#d9e2eb;background:#fff;font-size:13px}textarea{min-height:100px}input:focus,select:focus,textarea:focus{border-color:#19a88c;box-shadow:0 0 0 3px rgba(19,168,135,.12)}
+label{color:#40556d;font-size:11px;font-weight:800;letter-spacing:.1px}
+table{border:1px solid #e3eaf0;border-radius:13px;box-shadow:none}th{background:#f2f6f9;color:#41566d;font-size:11px;font-weight:850;text-transform:uppercase;letter-spacing:.45px}td,th{padding:13px 14px}tr:last-child td{border-bottom:0}
+.ride-list{gap:12px}.ride{padding:17px 19px}.ride p{font-size:12px;line-height:1.6}.success,.error,.otp{border-radius:10px;font-size:12px}
+/* Form layouts: fields stay readable and never drift into unrelated grid columns. */
+body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;max-width:760px;margin:18px 0 4px}
+body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form>label{display:grid;gap:7px}
+body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form .form-row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form .form-row label{display:flex;align-items:center;gap:8px}
+body.page-partner main.panel>section.ride:first-of-type form.agency-profile-form .btn{justify-self:start;min-width:180px}
+/* Dashboard and operational sections */
+.stats-grid{align-items:stretch}.stats-grid>.ride{transition:box-shadow .18s,border-color .18s}.stats-grid>.ride:hover{box-shadow:var(--elevation-1);border-color:#cfe5df}
+.fleet-dashboard,.admin-console{border-radius:20px}.fleet-section,.admin-category{border-color:#e3eaf0!important;box-shadow:var(--elevation-1)!important}.fleet-page-heading,.admin-welcome{border-radius:18px}
+/* Rental search and booking surfaces */
+.rental-panel{max-width:1180px;border:1px solid var(--stroke);border-radius:20px;box-shadow:var(--elevation-1)}.rental-form{gap:14px}.rental-result-card{padding:18px;border:1px solid #e3eaf0;border-radius:15px;background:#fff;box-shadow:var(--elevation-1)}.rental-result-card:hover{border-color:#cfe5df;box-shadow:var(--elevation-2)}
+/* Public landing page */
+.hero{box-shadow:0 22px 54px rgba(14,35,63,.18)}.home-features article{border:1px solid #e4ebf1;border-radius:16px;background:#fff;box-shadow:var(--elevation-1)}
+/* Responsive navigation, cards, forms and data tables */
+@media(max-width:900px){header:not(.auth-header){padding:10px 18px}.unified-site-nav{box-shadow:0 16px 30px rgba(10,27,46,.18)}}
+@media(max-width:760px){main{width:calc(100% - 24px);margin:15px auto 30px}.panel{padding:19px 15px;border-radius:16px}.panel h1{font-size:25px}.panel h2{font-size:16px}.ride{padding:14px}.rental-panel{width:calc(100% - 20px);padding:17px 13px}.rental-form{grid-template-columns:1fr}.rental-form button{width:100%}.rental-result-grid{grid-template-columns:1fr}.table-wrap,.admin-table-wrap{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}table{min-width:620px}th,td{padding:11px 10px;font-size:11px}.agency-profile-form{grid-template-columns:1fr!important}.agency-profile-form .form-row{display:grid!important;grid-template-columns:1fr;gap:10px!important}.agency-profile-form .btn{width:100%}.header-brand-context{font-size:9px;margin-left:4px;padding-left:8px}}
+@media(max-width:420px){header:not(.auth-header){padding:9px 12px}.header-brand{font-size:16px}.header-brand-mark{width:30px;height:30px}.unified-header-actions{gap:6px}.header-icon-link,.unified-profile-trigger{width:36px;height:36px}.panel{padding:16px 12px}.ride{padding:12px}.btn,button.btn{width:100%}.actions .btn{width:100%}.inline{align-items:stretch;flex-direction:column}.inline .btn{width:100%}}
