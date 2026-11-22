@@ -8,7 +8,7 @@ import java.util.List;
 @Document("rides")
 public class RideBooking {
  @Id private String id;
- private String customerId, customerName, customerMobile, pickup, destination, category, tripType, status="REQUESTED", paymentMethod="CASH", assignedDriverId, assignedDriverName, assignedVehicleId, assignedVehicleNumber, dispatchNote;
+ private String customerId, customerName, customerMobile, pickup, destination, category, tripType, serviceType="PASSENGER", status="REQUESTED", paymentMethod="CASH", assignedDriverId, assignedDriverName, assignedVehicleId, assignedVehicleNumber, dispatchNote;
  private String requestedVehicleId, requestedVehicleNumber; private boolean fareEstimateAccepted; private Instant fareEstimateAcceptedAt;
  private String journeyType="ONE_WAY", pickupCityId, pickupCity, pickupPinCode, destinationCityId, destinationCity, destinationPinCode, returnLegStatus="NOT_APPLICABLE", returnAssignedDriverId, returnAssignedDriverName, returnAssignedVehicleId, returnAssignedVehicleNumber, returnPickupOtp;
  private LocalDateTime returnAt; private Instant returnTripStartedAt, returnTripCompletedAt; private double returnActualDistanceKm, returnFinalFare;
@@ -32,6 +32,7 @@ public class RideBooking {
  public String getPickup(){return pickup;} public void setPickup(String v){pickup=v;}
  public String getDestination(){return destination;} public void setDestination(String v){destination=v;}
  public String getCategory(){return category;} public void setCategory(String v){category=v;}
+ public String getServiceType(){return serviceType==null||serviceType.isBlank()?"PASSENGER":serviceType;} public void setServiceType(String v){serviceType=v==null||v.isBlank()?"PASSENGER":v;}
  public String getTripType(){return tripType;} public void setTripType(String v){tripType=v;}
  public String getStatus(){return status;} public void setStatus(String v){status=v;updatedAt=Instant.now();}
  public String getPaymentMethod(){return paymentMethod;} public void setPaymentMethod(String v){paymentMethod=v;}

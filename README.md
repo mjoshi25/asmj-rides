@@ -164,3 +164,7 @@ The Admin dashboard now uses a responsive categorized Control Center with quick-
 
 ## Rental marketplace workflow (Phase 16B–16E)
 See `README-PHASE-16B-16E.md` and `PHASE-16B-16E-RENTAL-WORKFLOW.md` for customer search, provider acceptance, driver journey, invoice, direct payment verification and reviews.
+
+## Phase 18 – Multi-vehicle mobility architecture
+
+See [PHASE-18-ARCHITECTURE-COMPATIBILITY.md](PHASE-18-ARCHITECTURE-COMPATIBILITY.md) for the confirmed city-by-city rollout, dual dispatch policy, category-based commission design, backward-compatible data additions and migration safeguards.
