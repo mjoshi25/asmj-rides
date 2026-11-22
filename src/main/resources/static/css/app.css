@@ -388,16 +388,24 @@ header:not(.auth-header){min-height:76px;padding-inline:clamp(16px,3vw,48px)}hea
 @media(max-width:680px){.account-profile-card{grid-template-columns:auto minmax(0,1fr);gap:13px;padding:15px}.account-avatar{width:66px;height:66px}.account-photo-form{grid-column:1/-1;padding-top:12px;border-top:1px solid #e3edf2}.account-page{margin:16px auto!important}}
 
 
-/* Phase 10: immutable support contact display and invariant shared header */
-.support-registered-mobile{display:flex;flex-direction:column;gap:8px;min-width:0}
-.support-field-label{display:block;color:#38516b;font-size:12px;font-weight:800}
-.support-mobile-value{display:flex;align-items:center;min-height:48px;padding:12px 14px;border:1px solid #cfe0eb;border-radius:12px;background:#edf4f8;color:#18324d;font-size:15px;font-weight:750;letter-spacing:.3px;user-select:text;cursor:default}
-.support-registered-mobile .field-help{display:block;max-width:520px;color:#526b82;font-size:11px;line-height:1.55}
-.unified-app-header{display:flex!important;align-items:center!important;justify-content:space-between!important;position:sticky!important;top:0!important}
-.unified-app-header .unified-header-actions{display:flex!important;align-items:center!important;margin-left:auto!important;visibility:visible!important;opacity:1!important}
-.unified-app-header .unified-nav-toggle{display:flex!important;visibility:visible!important;opacity:1!important;order:3!important;flex:0 0 42px!important}
-.unified-app-header .unified-profile-trigger{order:2!important}
-.unified-app-header .notification-link{order:1!important}
-.unified-app-header .unified-site-nav{position:absolute!important}
-.unified-app-header.nav-open .unified-site-nav{display:flex!important}
-@media(max-width:900px){.unified-app-header{display:flex!important;grid-template-columns:none!important}.unified-header-actions{margin-left:auto!important}.unified-app-header .unified-site-nav{right:10px!important;left:auto!important;top:calc(100% + 8px)!important}}
+/* Phase 11 — universal navigation behaviour on desktop, tablet and mobile.
+   Public home and authenticated portal menus use the same click-to-open pattern. */
+.page-home .home-nav-header{position:sticky;isolation:isolate;overflow:visible;display:flex!important;align-items:center;justify-content:space-between;min-height:76px;gap:16px}
+.page-home .home-nav-header>.header-brand{display:inline-flex;align-items:center;gap:10px;min-width:0;color:#f5fbff;font-size:18px;font-weight:850;text-decoration:none;white-space:nowrap}
+.page-home .home-nav-header .header-brand-mark{width:39px;height:39px;object-fit:contain}
+.page-home .home-nav-header .nav-toggle{display:flex!important;visibility:visible;opacity:1;flex:0 0 44px;position:relative;z-index:3;align-items:center;justify-content:center;gap:5px;width:44px;height:44px;padding:10px;border:1px solid rgba(226,239,250,.25);border-radius:13px;background:rgba(255,255,255,.09);cursor:pointer}
+.page-home .home-nav-header .nav-toggle span{display:block;width:20px;height:2px;border-radius:3px;background:#f4fffc;transition:transform .18s ease,opacity .18s ease}
+.page-home .home-nav-header.nav-open .nav-toggle span:first-child{transform:translateY(7px) rotate(45deg)}
+.page-home .home-nav-header.nav-open .nav-toggle span:nth-child(2){opacity:0}
+.page-home .home-nav-header.nav-open .nav-toggle span:last-child{transform:translateY(-7px) rotate(-45deg)}
+.page-home .home-nav-header .site-nav{position:absolute!important;z-index:5;top:calc(100% + 8px);right:clamp(12px,4vw,56px);display:none!important;flex-direction:column!important;align-items:stretch!important;justify-content:flex-start!important;gap:5px!important;width:min(320px,calc(100vw - 24px));max-height:min(76dvh,620px);overflow-y:auto;overscroll-behavior:contain;padding:10px!important;border:1px solid rgba(220,237,247,.18);border-radius:16px;background:#10243d;box-shadow:0 20px 50px rgba(7,24,43,.32)}
+.page-home .home-nav-header.nav-open .site-nav{display:flex!important}
+.page-home .home-nav-header .site-nav>span{display:contents!important}
+.page-home .home-nav-header .site-nav a{display:flex!important;align-items:center;justify-content:flex-start;width:100%;min-height:46px;padding:12px 14px;border:1px solid transparent;border-radius:10px;background:transparent;color:#eaf5ff;font-size:14px;font-weight:800;line-height:1.3;text-decoration:none;white-space:normal}
+.page-home .home-nav-header .site-nav a:hover,.page-home .home-nav-header .site-nav a:focus-visible{background:rgba(255,255,255,.1);border-color:rgba(92,224,186,.35);color:#7ce8c8;text-decoration:none}
+.page-home .home-nav-header .site-nav a[href="/register"]{justify-content:center;background:linear-gradient(135deg,#5ce0ba,#21b991);color:#092f35;border-color:#50d7b3}
+.page-home .home-nav-header .site-nav form{display:block;width:100%;margin:4px 0 0;padding-top:7px;border-top:1px solid rgba(255,255,255,.14)}
+.page-home .home-nav-header .site-nav .logout-btn{width:100%;justify-content:flex-start;min-height:44px;padding:11px 14px;border:0;background:transparent!important;color:#ffb7b7!important}
+.page-home .home-nav-header .nav-toggle:focus-visible,.unified-app-header .unified-nav-toggle:focus-visible{outline:3px solid #69e3c1;outline-offset:3px}
+@media(max-width:900px){.page-home .home-nav-header{display:flex!important;grid-template-columns:none!important;min-height:66px;padding:10px 16px}.page-home .home-nav-header .site-nav{right:10px;max-height:calc(100dvh - 82px)}}
+@media(max-width:420px){.page-home .home-nav-header{min-height:62px;padding:9px 14px}.page-home .home-nav-header>.header-brand{font-size:16px}.page-home .home-nav-header .header-brand-mark{width:35px;height:35px}.page-home .home-nav-header .nav-toggle{width:42px;height:42px;flex-basis:42px}}

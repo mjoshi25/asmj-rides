@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Chat with ASMJ Ride Admin · Support</title>
-  <link rel="stylesheet" href="/css/app.css?v=phase10-contact-lock-unified-nav-20261122">
+  <link rel="stylesheet" href="/css/app.css?v=phase11-universal-menu-20261122">
 <meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
 <body class="page-support">
 <header th:replace="~{fragments/navigation :: authenticatedHeader('SUPPORT')}"></header>
@@ -25,7 +25,7 @@
     <form method="post" action="/support/create" enctype="multipart/form-data" class="support-compose">
       <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
       <div class="support-form-grid">
-        <div class="support-registered-mobile" aria-label="Approved registered mobile number"><span class="support-field-label">Approved mobile number <span class="required-mark">Verified account detail</span></span><output class="support-mobile-value" th:text="${mobile}">Registered mobile</output><small class="field-help">This number is taken from your approved account and cannot be edited here. To change it, use Account &amp; Settings and complete Admin verification.</small></div>
+        <label>Mobile number <span class="required-mark">Required</span><input name="mobile" type="tel" inputmode="tel" pattern="[+]?[0-9 -]{10,18}" maxlength="18" th:value="${mobile}" placeholder="Enter contact mobile number" required></label>
         <label>Reason for contacting<select name="category" required><option value="GENERAL">General enquiry</option><option value="PAYMENT">Payment / refund</option><option value="TRIP">Ride / trip</option><option value="DRIVER">Driver / partner</option><option value="SAFETY">Safety concern</option><option value="LOST_ITEM">Lost item</option><option value="OTHER">Other</option></select></label>
         <label class="support-full">Subject<input name="subject" maxlength="120" placeholder="Briefly describe what you need help with" required></label>
         <label class="support-full">Your message<textarea name="message" maxlength="2000" placeholder="Write your message to the ASMJ Ride admin team..." required></textarea></label>
@@ -35,7 +35,7 @@
     </form>
   </section>
 
-  <section class="support-conversations" id="support-conversations">
+  <section class="support-conversations">
     <div class="support-section-heading"><div><span class="support-eyebrow" th:text="${admin?'ADMIN INBOX':'YOUR SUPPORT HISTORY'}">YOUR SUPPORT HISTORY</span><h2 th:text="${admin?'All conversations':'Your conversations'}">Your conversations</h2></div><span class="conversation-count" th:text="${#lists.size(tickets)}+' conversations'">0 conversations</span></div>
     <article class="conversation-card" th:each="t:${tickets}">
       <div class="conversation-head">
@@ -65,5 +65,5 @@
   </section>
 </main>
 <footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><img class="brand-logo brand-logo-light" src="/images/asmj-ride-logo-white.svg" alt="ASMJ Ride"></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Chat with Admin</a><span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span><span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span><span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
-<script src="/js/app-ui.js?v=phase10-contact-lock-unified-nav-20261122" defer></script>
+<script src="/js/app-ui.js?v=phase11-universal-menu-20261122" defer></script>
 </body></html>

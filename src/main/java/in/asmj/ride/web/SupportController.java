@@ -42,12 +42,11 @@ public class SupportController {
 
     @PostMapping("/support/create")
     public String create(Authentication a, @RequestParam(required=false) String rideId,
-                         @RequestParam String category,
+                         @RequestParam String mobile, @RequestParam String category,
                          @RequestParam String subject, @RequestParam String message,
                          @RequestParam(value="attachments",required=false) List<MultipartFile> attachments) {
         UserAccount u=me(a);
-        // Always bind the support ticket to the verified account mobile; never trust a submitted form value.
-        String cleanMobile=u.getMobile()==null?"":u.getMobile().replaceAll("[\\s-]","");
+        String cleanMobile=mobile==null?"":mobile.replaceAll("[\\s-]","");
         if (u.hasGrantedRole("ADMIN") || !cleanMobile.matches("[+]?[0-9]{10,15}") ||
                 !List.of("GENERAL","PAYMENT","TRIP","DRIVER","SAFETY","LOST_ITEM","OTHER").contains(category) ||
                 subject==null || subject.isBlank() || subject.length()>120 || message==null || message.isBlank() || message.length()>2000)
