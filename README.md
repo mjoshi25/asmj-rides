@@ -154,3 +154,6 @@ The supplied ASMJ Ride codebase is being extended into the ASMJ Vehicle Rental m
 ## Marketplace enhancement status
 
 The source archive includes the initial marketplace foundation and Phase 2 multi-role / partner vehicle authorization workflows. See `MARKETPLACE-MIGRATION-STATUS.md` and `PHASE-2-MULTI-ROLE-AND-PARTNER-AUTHORIZATION.md`. Do not deploy until Maven tests, MongoDB integration checks, and existing ride regression tests pass.
+
+## Latest UI release
+Phase 4 adds unified ASMJ Ride branding, SVG logo/favicon assets, responsive login and registration layouts, shared button/form/navigation styling, and password visibility controls. See `PHASE-4-BRANDING-AND-UI-REDESIGN.md` for scope and the manual acceptance checklist. Production deployment remains a separate approval step.

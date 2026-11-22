@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Verify mobile · ASMJ Ride</title>
-  <link rel="stylesheet" href="/css/app.css?v=ride-release-v2">
-</head>
-<body class="page-verify-mobile"><header class="auth-header"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><a class="auth-home-link" href="/">Back to home</a></header>
+  <link rel="stylesheet" href="/css/app.css?v=phase4-brand-20261122">
+<meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
+<body class="page-verify-mobile"><header class="auth-header"><a class="footer-brand" href="/"><img class="brand-logo brand-logo-light" src="/images/asmj-ride-logo-white.svg" alt="ASMJ Ride"></a><a class="auth-home-link" href="/">Back to home</a></header>
 <main class="auth">
-  <a href="/" class="brand"><b>ASMJ Ride</b></a>
+  <a href="/" class="brand"><a class="header-brand" href="/" aria-label="ASMJ Ride home"><img src="/images/asmj-ride-mark.svg" alt="" class="header-brand-mark"><span>ASMJ <strong>Ride</strong></span></a></a>
   <h1>Verify your mobile number</h1>
   <p>ASMJ Ride support will issue a one-time security code after checking your registration details. The code is shared with you manually.</p>
   <p class="error" th:if="${error}" th:text="${error}"></p>
@@ -23,11 +23,11 @@
   <p class="muted">Haven't received a code? Contact ASMJ Ride support and provide your registered email and mobile number. Codes are valid for 24 hours and are locked after five incorrect attempts.</p>
   <p><a href="/login">Back to sign in</a> · <a href="/register">Create an account</a></p>
 </main>
-<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links">
+<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><img class="brand-logo brand-logo-light" src="/images/asmj-ride-logo-white.svg" alt="ASMJ Ride"></a><p>Move comfortably. Travel confidently.</p><div class="footer-links">
 <a href="/" >Home</a>
 <a href="/support">Chat with Admin</a>
 <span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span>
 <span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span>
 <span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span>
-</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=20261104" defer></script></body>
+</div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer><script src="/js/app-ui.js?v=phase4-brand-20261122" defer></script></body>
 </html>

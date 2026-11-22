@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Chat with ASMJ Ride Admin · Support</title>
-  <link rel="stylesheet" href="/css/app.css?v=ride-release-v2">
-</head>
+  <link rel="stylesheet" href="/css/app.css?v=phase4-brand-20261122">
+<meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
 <body class="page-support">
 <header class="app-header">
-  <b>ASMJ Ride <span class="admin-nav-note" th:if="${admin}">/ ADMIN SUPPORT INBOX</span><span th:unless="${admin}">· Support</span></b>
+  <a class="header-brand" href="/" aria-label="ASMJ Ride home"><img src="/images/asmj-ride-mark.svg" alt="" class="header-brand-mark"><span>ASMJ <strong>Ride</strong></span><small class="header-brand-context" th:text="${admin ? 'ADMIN SUPPORT' : 'SUPPORT'}">SUPPORT</small></a>
   <button class="nav-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
   <nav class="site-nav">
     <a href="/dashboard">Dashboard</a><a href="/payments">Payments</a>
@@ -61,7 +61,7 @@
           <div class="chat-attachments" th:if="${!#lists.isEmpty(msg.attachments)}"><a th:each="f:${msg.attachments}" th:href="@{'/files/support/'+${t.id}+'/'+${f.id}}" target="_blank" rel="noopener" th:text="'📎 '+${f.originalFilename}">Attachment</a></div>
         </div>
         <div class="chat-message from-user" th:if="${#lists.isEmpty(t.messages)}"><div class="chat-message-meta"><b th:text="${t.userName}">Customer</b><time th:text="${t.createdAt}">Time</time></div><p th:text="${t.message}">Original message</p></div>
-        <div class="chat-message from-admin legacy-reply" th:if="${#lists.isEmpty(t.messages) and t.adminReply!=null}"><div class="chat-message-meta"><b>ASMJ Ride Admin</b></div><p th:text="${t.adminReply}">Admin reply</p></div>
+        <div class="chat-message from-admin legacy-reply" th:if="${#lists.isEmpty(t.messages) and t.adminReply!=null}"><div class="chat-message-meta"><a class="header-brand" href="/" aria-label="ASMJ Ride home"><img src="/images/asmj-ride-mark.svg" alt="" class="header-brand-mark"><span>ASMJ <strong>Ride</strong></span></a></div><p th:text="${t.adminReply}">Admin reply</p></div>
       </div>
       <form th:action="${admin?'/admin/support/'+t.id+'/message':'/support/'+t.id+'/message'}" method="post" enctype="multipart/form-data" class="chat-reply-form">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -72,6 +72,6 @@
     <div class="support-empty" th:if="${#lists.isEmpty(tickets)}"><div>✉</div><h3>No conversations yet</h3><p th:text="${admin?'New customer support chats will appear here.':'Start a new chat above and our admin team will respond here.'}">Start a new chat above.</p></div>
   </section>
 </main>
-<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><span class="brand-mark">A</span><span>ASMJ <strong>Ride</strong></span></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Chat with Admin</a><span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span><span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span><span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
-<script src="/js/app-ui.js?v=20261104-support-chat-v1" defer></script>
+<footer class="site-footer"><div class="footer-inner"><a class="footer-brand" href="/"><img class="brand-logo brand-logo-light" src="/images/asmj-ride-logo-white.svg" alt="ASMJ Ride"></a><p>Move comfortably. Travel confidently.</p><div class="footer-links"><a href="/">Home</a><a href="/support">Chat with Admin</a><span sec:authorize="isAuthenticated()"><a href="/dashboard">Dashboard</a></span><span sec:authorize="isAnonymous()"><a href="/login">Sign in</a><a href="/register">Create account</a></span><span sec:authorize="isAuthenticated()"><form method="post" action="/logout" class="footer-logout"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button type="submit">Logout</button></form></span></div><small>© 2026 ASMJ Ride. All rights reserved.</small></div></footer>
+<script src="/js/app-ui.js?v=phase4-brand-20261122-support-chat-v1" defer></script>
 </body></html>
