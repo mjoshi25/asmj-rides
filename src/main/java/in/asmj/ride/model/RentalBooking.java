@@ -23,6 +23,10 @@ public class RentalBooking {
     private String dropAddress;
     private String status = "REQUESTED";
     private String paymentStatus = "PENDING";
+    private String voucherId, voucherCode;
+    private double discountAmount;
+    private double providerDiscountAmount;
+    private double originalQuotedAmount;
     private double estimatedAmount;
     private double quotedAmount;
     private double finalAmount;
@@ -53,6 +57,11 @@ public class RentalBooking {
     public String getDropAddress(){return dropAddress;} public void setDropAddress(String v){dropAddress=v;}
     public String getStatus(){return status;} public void setStatus(String v){status=v;updatedAt=Instant.now();}
     public String getPaymentStatus(){return paymentStatus;} public void setPaymentStatus(String v){paymentStatus=v;}
+    public String getVoucherId(){return voucherId;} public void setVoucherId(String v){voucherId=v;}
+    public String getVoucherCode(){return voucherCode;} public void setVoucherCode(String v){voucherCode=v;}
+    public double getProviderDiscountAmount(){return providerDiscountAmount;} public void setProviderDiscountAmount(double v){providerDiscountAmount=v;}
+    public double getDiscountAmount(){return discountAmount;} public void setDiscountAmount(double v){discountAmount=v;}
+    public double getOriginalQuotedAmount(){return originalQuotedAmount;} public void setOriginalQuotedAmount(double v){originalQuotedAmount=v;}
     public double getEstimatedAmount(){return estimatedAmount;} public void setEstimatedAmount(double v){estimatedAmount=v;}
     public double getQuotedAmount(){return quotedAmount;} public void setQuotedAmount(double v){quotedAmount=v;}
     public double getFinalAmount(){return finalAmount;} public void setFinalAmount(double v){finalAmount=v;}
