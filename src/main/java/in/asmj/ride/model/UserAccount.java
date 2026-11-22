@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Document("users")
 public class UserAccount {
@@ -16,6 +18,8 @@ public class UserAccount {
     private String name, email, mobile, passwordHash, role, status = "PENDING";
     // New multi-role field. Legacy documents continue to use the primary `role` field.
     private List<String> roles = new ArrayList<>();
+    // Additional roles have independent approval states; legacy primary role keeps legacy status semantics.
+    private Map<String, String> roleStatuses = new LinkedHashMap<>();
     private boolean mobileVerified, available, fleetOwnerDriverEnabled;
     private String fleetOwnerId;
     private String pendingFleetOwnerId;
@@ -54,17 +58,44 @@ public class UserAccount {
     }
     public List<String> getRoles() {
         LinkedHashSet<String> all = new LinkedHashSet<>();
-        if (roles != null) roles.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).forEach(all::add);
-        if (role != null) all.add(normalizeRole(role));
+        if (roles != null) roles.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).filter(Objects::nonNull).forEach(all::add);
+        if (role != null && normalizeRole(role) != null) all.add(normalizeRole(role));
         return new ArrayList<>(all);
     }
     public void setRoles(List<String> values) {
         LinkedHashSet<String> clean = new LinkedHashSet<>();
-        if (values != null) values.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).forEach(clean::add);
+        if (values != null) values.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).filter(Objects::nonNull).forEach(clean::add);
         if (role != null) clean.add(normalizeRole(role));
         roles = new ArrayList<>(clean);
     }
     public boolean hasRole(String value) { return value != null && getRoles().contains(normalizeRole(value)); }
+    public boolean hasGrantedRole(String value) { return value != null && getGrantedRoles().contains(normalizeRole(value)); }
+    public Map<String,String> getRoleStatuses() { return roleStatuses == null ? new LinkedHashMap<>() : new LinkedHashMap<>(roleStatuses); }
+    public void setRoleStatuses(Map<String,String> values) { roleStatuses = values == null ? new LinkedHashMap<>() : new LinkedHashMap<>(values); }
+    public void setRoleStatus(String roleName, String statusValue) {
+        String normalized = normalizeRole(roleName);
+        if (normalized == null) return;
+        if (roleStatuses == null) roleStatuses = new LinkedHashMap<>();
+        roleStatuses.put(normalized, statusValue);
+    }
+    public String getRoleStatus(String roleName) {
+        String normalized = normalizeRole(roleName);
+        if (normalized == null) return null;
+        if (roleStatuses != null && roleStatuses.containsKey(normalized)) return roleStatuses.get(normalized);
+        return normalized.equals(normalizeRole(role)) ? status : null;
+    }
+    public List<String> getGrantedRoles() {
+        List<String> granted = new ArrayList<>();
+        for (String candidate : getRoles()) {
+            // Preserve legacy primary-role access; additional roles are granted only after Admin approval.
+            if (candidate.equals(normalizeRole(role)) || "APPROVED".equals(getRoleStatus(candidate))) granted.add(candidate);
+        }
+        return granted;
+    }
+    public void grantRole(String roleName) {
+        addRole(roleName);
+        setRoleStatus(roleName, "APPROVED");
+    }
     public void addRole(String value) {
         String normalized = normalizeRole(value);
         if (normalized == null) return;

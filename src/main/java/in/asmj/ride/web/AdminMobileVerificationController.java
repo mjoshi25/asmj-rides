@@ -36,7 +36,7 @@ public class AdminMobileVerificationController {
                 Comparator.nullsLast(Comparator.<Instant>reverseOrder())));
         model.addAttribute("accounts", accounts);
         model.addAttribute("pendingCount", accounts.stream()
-                .filter(u -> !"ADMIN".equals(u.getRole()) && !u.isMobileVerified()).count());
+                .filter(u -> !u.hasGrantedRole("ADMIN") && !u.isMobileVerified()).count());
         return "admin-mobile-verifications";
     }
 
@@ -47,7 +47,7 @@ public class AdminMobileVerificationController {
             redirect.addFlashAttribute("error", "Account not found.");
             return "redirect:/admin/mobile-verifications";
         }
-        if ("ADMIN".equals(user.getRole()) || user.isMobileVerified()) {
+        if (user.hasGrantedRole("ADMIN") || user.isMobileVerified()) {
             redirect.addFlashAttribute("error", "A security code cannot be issued for this account.");
             return "redirect:/admin/mobile-verifications";
         }

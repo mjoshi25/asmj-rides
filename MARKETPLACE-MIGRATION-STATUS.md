@@ -10,17 +10,26 @@ This branch is based on the supplied `asmj-rides` source archive. Existing ride 
 - Added travel-agent document requirements for identity and business registration.
 - Added a travel-agency profile with own-fleet and partner-fleet operating preferences. Both can be selected.
 - Added the `travelAgentProfiles` collection model/repository.
-- Added `agentVehicleAuthorizations` model/repository with owner, agent, vehicle, permission, status and decision fields. This is a data foundation; owner approval screens and authorization enforcement are not yet implemented.
+- Added `agentVehicleAuthorizations` model/repository with owner, agent, vehicle, permission, status and decision fields; Phase 2 adds owner approval screens and listing-management enforcement.
 - Added `rentalBookings` model/repository, separate from legacy `rides`, to avoid changing existing ride records.
 - Added rental-mode flags to vehicles. Existing vehicles default to with-driver support and self-drive disabled.
 - Added dynamic vehicle-category model/repository and idempotent starter category seeding, preserving existing `CAR`, `AUTO`, `BIKE`, `OTHER` codes.
 - Added rental pricing rule model/repository.
 - Added JUnit/Spring Boot test dependency and role compatibility tests.
 
+## Phase 2 incorporated
+
+- Multi-role account page, additional role requests and Admin approval workflow.
+- Role-specific approval status and Spring Security authority gating for additional roles.
+- Role-specific document uploads for pending role requests.
+- Dashboard role selection; users must sign out and back in after Admin approval to refresh authorities.
+- Owner-to-agent partner vehicle authorization request, owner approval/rejection and revocation.
+- Permission allow-list and server-side listing-update/document-upload checks for authorized agents.
+- See `PHASE-2-MULTI-ROLE-AND-PARTNER-AUTHORIZATION.md` for route and implementation details.
+
 ## Not yet implemented
 
-- Full multi-role selection/switching UI and Admin role assignment workflow.
-- Partner-vehicle authorization request, owner approval, revocation screens and server-side access checks.
+- Full partner vehicle management experience for agents across every module; authorization enforcement must be wired into future booking, pricing, availability and driver-assignment endpoints.
 - Dynamic category administration and conversion of all existing category dropdowns/validators to database-driven categories.
 - Public vehicle marketplace search and listing pages.
 - Rental booking creation, quotation, acceptance and concurrency-safe date-range reservation service.

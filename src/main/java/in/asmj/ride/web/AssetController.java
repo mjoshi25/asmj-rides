@@ -16,7 +16,15 @@ public class AssetController {
    UserAccount user=users.findById(ownerId).orElse(null);if(user==null)return "redirect:/admin/uploads?error";
    UploadedAsset asset=user.getDocuments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(asset==null)return "redirect:/admin/uploads?error";
    asset.setVerificationStatus(decision);asset.setAdminNote(note==null?null:note.trim());
-   if(!"VERIFIED".equals(decision)&&documentRequirements.mandatory(user.getRole()).contains(asset.getCategory())){user.setStatus("PENDING");user.setAvailable(false);}
+   if(!"VERIFIED".equals(decision)){
+    for(String role:user.getRoles()) if(documentRequirements.mandatory(role).contains(asset.getCategory())) {
+     if(role.equals(user.getRole())) { user.setStatus("PENDING"); user.setAvailable(false); }
+     else user.setRoleStatus(role,"PENDING");
+    }
+   } else {
+    for(String role:user.getRoles()) if(!role.equals(user.getRole()) && "PENDING".equals(user.getRoleStatus(role))
+            && documentRequirements.verifiedUserDocuments(user,role)) user.setRoleStatus(role,"APPROVED");
+   }
    users.save(user);
   }else if("vehicle-doc".equals(kind)){
    Vehicle vehicle=vehicles.findById(ownerId).orElse(null);if(vehicle==null)return "redirect:/admin/uploads?error";
@@ -36,7 +44,7 @@ public class AssetController {
  @GetMapping("/files/{kind}/{ownerId}/{assetId}") public ResponseEntity<byte[]> file(Authentication a,@PathVariable String kind,@PathVariable String ownerId,@PathVariable String assetId){
   UserAccount viewer=me(a);UploadedAsset asset=find(kind,ownerId,assetId);
   if(asset==null)throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-  if("vehicle-photo".equals(kind)&&"CUSTOMER".equals(viewer.getRole())&&!"VERIFIED".equals(asset.getVerificationStatus()))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+  if("vehicle-photo".equals(kind)&&viewer.hasGrantedRole("CUSTOMER")&&!"VERIFIED".equals(asset.getVerificationStatus()))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
   if(!authorized(viewer,kind,ownerId))throw new ResponseStatusException(HttpStatus.FORBIDDEN);
   if(asset.getPublicId()!=null&&asset.getPublicId().startsWith("demo:")){
    String path=asset.getPublicId().substring(5);
@@ -55,7 +63,7 @@ public class AssetController {
    return ResponseEntity.ok().contentType(media).contentLength(response.body().length).header(HttpHeaders.CONTENT_DISPOSITION,disposition.toString()).header(HttpHeaders.CACHE_CONTROL,"no-store, private").header("X-Content-Type-Options","nosniff").body(response.body());
   }catch(ResponseStatusException ex){throw ex;}catch(Exception ex){throw new ResponseStatusException(HttpStatus.BAD_GATEWAY,"Unable to retrieve the file from Cloudinary");}
  }
- private boolean authorized(UserAccount u,String kind,String ownerId){if("ADMIN".equals(u.getRole()))return true;return switch(kind){case "profile","partner-doc"->u.getId().equals(ownerId);case "vehicle-photo"->vehicles.findById(ownerId).map(v->u.getId().equals(v.getOwnerId())||("CUSTOMER".equals(u.getRole())&&"APPROVED".equals(v.getStatus()))).orElse(false);case "vehicle-doc"->vehicles.findById(ownerId).map(v->u.getId().equals(v.getOwnerId())).orElse(false);case "payment-proof"->payments.findById(ownerId).map(p->u.getId().equals(p.getCustomerId())||u.getId().equals(p.getDriverId())||u.getId().equals(p.getFleetOwnerId())).orElse(false);case "support"->tickets.findById(ownerId).map(t->u.getId().equals(t.getUserId())).orElse(false);case "safety"->safety.findById(ownerId).map(s->u.getId().equals(s.getUserId())).orElse(false);default->false;};}
+ private boolean authorized(UserAccount u,String kind,String ownerId){if(u.hasGrantedRole("ADMIN"))return true;return switch(kind){case "profile","partner-doc"->u.getId().equals(ownerId);case "vehicle-photo"->vehicles.findById(ownerId).map(v->u.getId().equals(v.getOwnerId())||(u.hasGrantedRole("CUSTOMER")&&"APPROVED".equals(v.getStatus()))).orElse(false);case "vehicle-doc"->vehicles.findById(ownerId).map(v->u.getId().equals(v.getOwnerId())).orElse(false);case "payment-proof"->payments.findById(ownerId).map(p->u.getId().equals(p.getCustomerId())||u.getId().equals(p.getDriverId())||u.getId().equals(p.getFleetOwnerId())).orElse(false);case "support"->tickets.findById(ownerId).map(t->u.getId().equals(t.getUserId())).orElse(false);case "safety"->safety.findById(ownerId).map(s->u.getId().equals(s.getUserId())).orElse(false);default->false;};}
  private UploadedAsset find(String kind,String ownerId,String assetId){return switch(kind){case "profile"->users.findById(ownerId).map(UserAccount::getProfilePhoto).filter(Objects::nonNull).filter(x->assetId.equals(x.getId())).orElse(null);case "partner-doc"->users.findById(ownerId).map(UserAccount::getDocuments).orElse(List.of()).stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);case "vehicle-photo"->vehicles.findById(ownerId).map(Vehicle::getPhotos).orElse(List.of()).stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);case "vehicle-doc"->vehicles.findById(ownerId).map(Vehicle::getDocuments).orElse(List.of()).stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);case "payment-proof"->payments.findById(ownerId).map(PaymentRecord::getPaymentProof).filter(Objects::nonNull).filter(x->assetId.equals(x.getId())).orElse(null);case "support"->tickets.findById(ownerId).map(t->{UploadedAsset legacy=t.getAttachments().stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);if(legacy!=null)return legacy;return t.getMessages().stream().filter(Objects::nonNull).flatMap(msg->msg.getAttachments().stream()).filter(x->assetId.equals(x.getId())).findFirst().orElse(null);}).orElse(null);case "safety"->safety.findById(ownerId).map(SafetyReport::getAttachments).orElse(List.of()).stream().filter(x->assetId.equals(x.getId())).findFirst().orElse(null);default->null;};}
 
 }

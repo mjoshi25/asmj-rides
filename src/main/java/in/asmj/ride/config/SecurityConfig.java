@@ -19,14 +19,14 @@ public class SecurityConfig {
         return email -> {
             var user=repository.findByEmailIgnoreCase(email).orElseThrow(()->new UsernameNotFoundException("Account not found"));
             
-if (!user.hasRole("ADMIN") && !user.isMobileVerified()) {
+if (!user.hasGrantedRole("ADMIN") && !user.isMobileVerified()) {
     throw new DisabledException("Verify your mobile first");
 }
 
 if ("SUSPENDED".equals(user.getStatus())) {
     throw new DisabledException("Account suspended");
 }
-            return User.withUsername(user.getEmail()).password(user.getPasswordHash()).roles(user.getRoles().toArray(String[]::new)).build();
+            return User.withUsername(user.getEmail()).password(user.getPasswordHash()).roles(user.getGrantedRoles().toArray(String[]::new)).build();
         };
     }
 
@@ -39,6 +39,7 @@ if ("SUSPENDED".equals(user.getStatus())) {
         http.authenticationProvider(provider).authorizeHttpRequests(auth->auth
             .requestMatchers("/","/register","/verify-mobile","/login","/access-denied","/css/**","/js/**","/images/**","/favicon.ico","/manifest.webmanifest","/actuator/health","/actuator/health/**").permitAll()
             .requestMatchers("/admin","/admin/**").hasRole("ADMIN")
+            .requestMatchers("/account","/account/**").authenticated()
             .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","TRAVEL_AGENT","ADMIN")
             .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER","TRAVEL_AGENT")
             .requestMatchers("/agent","/agent/**").hasRole("TRAVEL_AGENT")

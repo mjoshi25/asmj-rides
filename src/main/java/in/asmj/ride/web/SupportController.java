@@ -32,7 +32,7 @@ public class SupportController {
     @GetMapping("/support")
     public String support(Authentication a, Model m) {
         UserAccount u=me(a);
-        boolean admin="ADMIN".equals(u.getRole());
+        boolean admin=u.hasGrantedRole("ADMIN");
         m.addAttribute("tickets", admin ? tickets.findAllByOrderByCreatedAtDesc() : tickets.findByUserIdOrderByCreatedAtDesc(u.getId()));
         m.addAttribute("rides", rides.findAll().stream().filter(r -> u.getId().equals(r.getCustomerId()) || u.getId().equals(r.getAssignedDriverId())).toList());
         m.addAttribute("admin", admin);
@@ -47,7 +47,7 @@ public class SupportController {
                          @RequestParam(value="attachments",required=false) List<MultipartFile> attachments) {
         UserAccount u=me(a);
         String cleanMobile=mobile==null?"":mobile.replaceAll("[\\s-]","");
-        if ("ADMIN".equals(u.getRole()) || !cleanMobile.matches("[+]?[0-9]{10,15}") ||
+        if (u.hasGrantedRole("ADMIN") || !cleanMobile.matches("[+]?[0-9]{10,15}") ||
                 !List.of("GENERAL","PAYMENT","TRIP","DRIVER","SAFETY","LOST_ITEM","OTHER").contains(category) ||
                 subject==null || subject.isBlank() || subject.length()>120 || message==null || message.isBlank() || message.length()>2000)
             return "redirect:/support?error";
@@ -71,7 +71,7 @@ public class SupportController {
     public String userMessage(Authentication a, @PathVariable String id, @RequestParam String message,
                               @RequestParam(value="attachments",required=false) List<MultipartFile> attachments) {
         UserAccount u=me(a); SupportTicket t=tickets.findById(id).orElseThrow();
-        if ("ADMIN".equals(u.getRole()) || !u.getId().equals(t.getUserId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (u.hasGrantedRole("ADMIN") || !u.getId().equals(t.getUserId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return appendMessage(t,u,message,attachments,false,null);
     }
 
@@ -80,7 +80,7 @@ public class SupportController {
                                @RequestParam(value="attachments",required=false) List<MultipartFile> attachments,
                                @RequestParam(value="status",required=false) String status) {
         UserAccount u=me(a);
-        if (!"ADMIN".equals(u.getRole())) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if (!u.hasGrantedRole("ADMIN")) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         SupportTicket t=tickets.findById(id).orElseThrow();
         if (status!=null && !List.of("OPEN","IN_PROGRESS","RESOLVED","CLOSED").contains(status)) return "redirect:/support?error";
         return appendMessage(t,u,message,attachments,true,status);
@@ -104,7 +104,7 @@ public class SupportController {
     /** Backward-compatible handler for older admin reply forms/bookmarks. */
     @PostMapping("/admin/support/{id}/reply")
     public String reply(Authentication a,@PathVariable String id,@RequestParam String reply,@RequestParam String status) {
-        UserAccount u=me(a); if (!"ADMIN".equals(u.getRole())) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        UserAccount u=me(a); if (!u.hasGrantedRole("ADMIN")) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         SupportTicket t=tickets.findById(id).orElseThrow();
         if(reply==null||reply.isBlank()||reply.length()>2000||!List.of("OPEN","IN_PROGRESS","RESOLVED","CLOSED").contains(status))return "redirect:/support?error";
         SupportMessage msg=new SupportMessage(); msg.setSenderRole("ADMIN"); msg.setSenderName(u.getName()); msg.setText(reply.trim());

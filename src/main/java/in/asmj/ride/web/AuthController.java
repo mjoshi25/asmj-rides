@@ -54,7 +54,7 @@ public class AuthController {
         }
 
         UserAccount user = account.get();
-        if (user.hasRole("ADMIN")) {
+        if (user.hasGrantedRole("ADMIN")) {
             model.addAttribute("error", "Administrator accounts do not use customer mobile verification.");
             return "verify-mobile";
         }
@@ -137,12 +137,16 @@ public class AuthController {
     }
 
     @GetMapping("/dashboard")
-    String dashboard(org.springframework.security.core.Authentication authentication) {
+    String dashboard(org.springframework.security.core.Authentication authentication, jakarta.servlet.http.HttpSession session) {
         var user = repository.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
-        return "redirect:" + (user.hasRole("ADMIN") ? "/admin"
-                : user.getRole().equals("CUSTOMER") ? "/customer"
-                : user.getRole().equals("DRIVER") ? "/driver"
-                : user.getRole().equals("TRAVEL_AGENT") ? "/agent" : "/fleet");
+        Object selected=session.getAttribute("ACTIVE_ROLE");
+        String role=selected instanceof String value && user.getGrantedRoles().contains(value) ? value : user.getRole();
+        if ("ADMIN".equals(role)) return "redirect:/admin";
+        if ("CUSTOMER".equals(role)) return "redirect:/customer";
+        if ("DRIVER".equals(role)) return "redirect:/driver";
+        if ("TRAVEL_AGENT".equals(role)) return "redirect:/agent";
+        if ("FLEET_OWNER".equals(role)) return "redirect:/fleet";
+        return "redirect:/account";
     }
 
     private void clearActiveCode(UserAccount user) {

@@ -149,3 +149,8 @@ For the optional staging-only demo dataset (2 fleet owners, 4 drivers, 3 custome
 ## Vehicle rental marketplace enhancement (development branch)
 
 The supplied ASMJ Ride codebase is being extended into the ASMJ Vehicle Rental marketplace while preserving the legacy ride workflow. See [MARKETPLACE-MIGRATION-STATUS.md](MARKETPLACE-MIGRATION-STATUS.md) for implemented foundations, remaining work and rollout safeguards. New rental bookings use a separate `rentalBookings` collection; existing `rides` records are not repurposed.
+
+
+## Marketplace enhancement status
+
+The source archive includes the initial marketplace foundation and Phase 2 multi-role / partner vehicle authorization workflows. See `MARKETPLACE-MIGRATION-STATUS.md` and `PHASE-2-MULTI-ROLE-AND-PARTNER-AUTHORIZATION.md`. Do not deploy until Maven tests, MongoDB integration checks, and existing ride regression tests pass.
