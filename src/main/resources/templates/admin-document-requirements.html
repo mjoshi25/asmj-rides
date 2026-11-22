@@ -1,6 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document Master · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase11-universal-menu-20261122"><meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document Master · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase12-support-contact-nav-20261122"><meta name="theme-color" content="#10243d"><link rel="icon" type="image/svg+xml" href="/images/asmj-ride-mark.svg"><link rel="apple-touch-icon" href="/images/asmj-ride-mark.svg"></head>
 <body class="page-admin">
 <header th:replace="~{fragments/navigation :: authenticatedHeader('ADMIN')}"></header>
 <main class="panel">
@@ -35,4 +35,4 @@
 <button class="btn" type="submit">Add document</button></form>
 </section>
 <section class="ride"><h2>Recent configuration changes</h2><p class="muted">Most recent 100 changes are retained.</p><ul><li th:each="event:${auditLog}" th:text="${event}"></li></ul></section><p><a class="btn secondary" href="/admin">Back to admin</a></p>
-</main><script src="/js/app-ui.js?v=phase11-universal-menu-20261122" defer></script></body></html>
+</main><script src="/js/app-ui.js?v=phase12-support-contact-nav-20261122" defer></script></body></html>

@@ -1,6 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document review · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase11-universal-menu-20261122"><style>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Document review · ASMJ Ride</title><link rel="stylesheet" href="/css/app.css?v=phase12-support-contact-nav-20261122"><style>
 .review-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px);gap:10px;margin:14px 0 18px}
 .review-toolbar input,.review-toolbar select{width:100%;min-height:46px;padding:10px 12px;border:1px solid #cbd5e1;border-radius:10px;background:#fff}
 .review-group{border:1px solid #dbe4ec;border-radius:16px;padding:16px;margin:14px 0;background:#fff;box-shadow:0 4px 16px rgba(15,23,42,.04)}
@@ -104,4 +104,4 @@ document.querySelectorAll('.review-section').forEach(section=>{
  search.addEventListener('input',update);filter.addEventListener('change',update);update();
 });
 document.querySelectorAll('.review-form').forEach(form=>{const select=form.querySelector('.review-decision');const note=form.querySelector('textarea[name=note]');if(select&&note){const sync=()=>{note.required=select.value==='REJECTED';};select.addEventListener('change',sync);sync();}});
-</script><script src="/js/app-ui.js?v=phase11-universal-menu-20261122" defer></script></body></html>
+</script><script src="/js/app-ui.js?v=phase12-support-contact-nav-20261122" defer></script></body></html>

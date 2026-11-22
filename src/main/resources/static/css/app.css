@@ -409,3 +409,9 @@ header:not(.auth-header){min-height:76px;padding-inline:clamp(16px,3vw,48px)}hea
 .page-home .home-nav-header .nav-toggle:focus-visible,.unified-app-header .unified-nav-toggle:focus-visible{outline:3px solid #69e3c1;outline-offset:3px}
 @media(max-width:900px){.page-home .home-nav-header{display:flex!important;grid-template-columns:none!important;min-height:66px;padding:10px 16px}.page-home .home-nav-header .site-nav{right:10px;max-height:calc(100dvh - 82px)}}
 @media(max-width:420px){.page-home .home-nav-header{min-height:62px;padding:9px 14px}.page-home .home-nav-header>.header-brand{font-size:16px}.page-home .home-nav-header .header-brand-mark{width:35px;height:35px}.page-home .home-nav-header .nav-toggle{width:42px;height:42px;flex-basis:42px}}
+
+/* Phase 12: immutable support contact detail, shared navigation action. */
+.support-registered-mobile{display:flex;flex-direction:column;gap:7px;min-width:0;padding:13px 15px;border:1px solid #d8e5ef;border-radius:13px;background:#f2f7fa;color:#10243d}
+.support-registered-mobile .support-field-label{font-size:12px;font-weight:800;color:#435a72}
+.support-registered-mobile strong{display:block;min-height:22px;font-size:15px;letter-spacing:.02em;overflow-wrap:anywhere}
+.support-registered-mobile small{font-size:11px;line-height:1.55;color:#587087}
