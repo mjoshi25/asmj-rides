@@ -68,3 +68,13 @@ A full Maven build, MongoDB integration test and live Render/browser test have n
 - Existing legacy mandatoryByRole configuration is migrated into document definitions on first load.
 - Document requirement updates retain the latest 100 admin change entries.
 - Existing uploaded document metadata is retained when a custom type is deleted.
+
+
+## Phase 16B–16E – Rental marketplace workflow
+- Added customer route/date/mode vehicle search and booking requests.
+- Added provider acceptance/decline, quoted fare, driver assignment/reassignment and in-app notifications.
+- Added driver acceptance, journey start/end odometer capture and invoice issue.
+- Added provider-managed self-drive closure, customer invoice view, direct payment reporting and provider verification/dispute, plus vehicle/provider/driver reviews.
+- Added per-vehicle provider payment instructions, snapshotted on booking acceptance.
+- Preserved legacy RideBooking collection and direct-to-provider rental payment model.
+- See `PHASE-16B-16E-RENTAL-WORKFLOW.md` for limitations and validation requirements.

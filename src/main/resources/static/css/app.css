@@ -534,3 +534,37 @@ body.page-partner main.panel section.ride form>button{grid-column:1/-1}
 .availability-form button{grid-column:auto!important;white-space:nowrap}
 @media(max-width:760px){body.page-partner main.panel section.ride form{grid-template-columns:1fr}.route-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:210px}.availability-form{grid-template-columns:1fr!important}.availability-form button{grid-column:1!important;width:100%}}
 @media(max-width:420px){.route-choice-grid{grid-template-columns:1fr}}
+
+/* Phase 16B–E: customer/provider/driver rental workflow */
+.rental-panel{max-width:1080px;margin:clamp(18px,4vw,48px) auto;padding:clamp(20px,3vw,36px)}
+.rental-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:24px 0}
+.rental-form label,.rental-panel label,.ride label{display:flex;flex-direction:column;gap:7px;font-weight:650;color:#18314d}
+.rental-form input,.rental-form select,.rental-panel input,.rental-panel select,.rental-panel textarea,.ride input,.ride select,.ride textarea{width:100%;min-width:0;border:1px solid #d5e1ed;border-radius:12px;padding:12px 13px;background:#fff;color:#15253d;font:inherit}
+.rental-form button{grid-column:1/-1;justify-self:start;min-width:240px}
+.rental-result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;margin-top:22px}
+.rental-result-card{display:flex;flex-direction:column;gap:12px;min-width:0}
+.rental-result-card form{margin-top:auto;display:grid;gap:12px}
+.rental-result-card .btn,.ride .btn{min-height:44px;border-radius:12px}
+.rental-panel .ride,.panel>.ride{margin:18px 0;padding:clamp(16px,2.5vw,24px);border:1px solid #dce6ef;border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(16,36,61,.05);min-width:0}
+.rental-panel .ride form,.panel>.ride form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;align-items:end;margin-top:16px}
+.rental-panel .ride form h3,.panel>.ride form h3{grid-column:1/-1}
+.rental-panel .ride form button,.panel>.ride form button{align-self:end;min-height:44px}
+.eyebrow{font-size:.72rem;letter-spacing:.15em;font-weight:800;color:#0b9d88}
+@media(max-width:700px){.rental-form{grid-template-columns:1fr;gap:13px}.rental-form button{grid-column:auto;width:100%;min-width:0}.rental-panel{margin:12px auto;padding:18px}.rental-panel .ride form,.panel>.ride form{grid-template-columns:1fr}.rental-result-grid{grid-template-columns:1fr}}
+
+/* Phase 16B–E: customer/provider/driver rental workflow */
+.rental-panel{max-width:1080px;margin:clamp(18px,4vw,48px) auto;padding:clamp(20px,3vw,36px)}
+.rental-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:24px 0}
+.rental-form label,.rental-panel label,.ride label{display:flex;flex-direction:column;gap:7px;font-weight:650;color:#18314d}
+.rental-form input,.rental-form select,.rental-panel input,.rental-panel select,.rental-panel textarea,.ride input,.ride select,.ride textarea{width:100%;min-width:0;border:1px solid #d5e1ed;border-radius:12px;padding:12px 13px;background:#fff;color:#15253d;font:inherit}
+.rental-form button{grid-column:1/-1;justify-self:start;min-width:240px}
+.rental-result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;margin-top:22px}
+.rental-result-card{display:flex;flex-direction:column;gap:12px;min-width:0}
+.rental-result-card form{margin-top:auto;display:grid;gap:12px}
+.rental-result-card .btn,.ride .btn{min-height:44px;border-radius:12px}
+.rental-panel .ride,.panel>.ride{margin:18px 0;padding:clamp(16px,2.5vw,24px);border:1px solid #dce6ef;border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(16,36,61,.05);min-width:0}
+.rental-panel .ride form,.panel>.ride form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px;align-items:end;margin-top:16px}
+.rental-panel .ride form h3,.panel>.ride form h3{grid-column:1/-1}
+.rental-panel .ride form button,.panel>.ride form button{align-self:end;min-height:44px}
+.eyebrow{font-size:.72rem;letter-spacing:.15em;font-weight:800;color:#0b9d88}
+@media(max-width:700px){.rental-form{grid-template-columns:1fr;gap:13px}.rental-form button{grid-column:auto;width:100%;min-width:0}.rental-panel{margin:12px auto;padding:18px}.rental-panel .ride form,.panel>.ride form{grid-template-columns:1fr}.rental-result-grid{grid-template-columns:1fr}}

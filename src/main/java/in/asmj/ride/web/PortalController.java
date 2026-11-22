@@ -129,7 +129,7 @@ public class PortalController {
         vehicle.setSupportsSelfDrive(selfDrive);
     }
 
-    @PostMapping("/partner/vehicle") String add(Authentication a,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam("photos") List<MultipartFile> photos){
+    @PostMapping("/partner/vehicle") String add(Authentication a,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam(required=false)String paymentInstructions,@RequestParam("photos") List<MultipartFile> photos){
         var u=me(a);if(!(u.hasGrantedRole("DRIVER")||u.hasGrantedRole("FLEET_OWNER")||u.hasGrantedRole("TRAVEL_AGENT")))return "redirect:/partner";
         if(u.hasGrantedRole("TRAVEL_AGENT")){
             TravelAgentProfile profile=agentProfiles.findByUserId(u.getId()).orElse(null);
@@ -137,21 +137,21 @@ public class PortalController {
         }
         if(!List.of("CAR","AUTO","BIKE","OTHER").contains(category)||registrationNumber==null||registrationNumber.isBlank()||registrationNumber.length()>20)return "redirect:/partner?error=vehicle";
         if(photos==null||photos.stream().filter(f->f!=null&&!f.isEmpty()).count()<1)return "redirect:/partner?uploadError=vehiclePhotoRequired";
-        Vehicle v=new Vehicle();v.setOwnerId(u.getId());v.setCategory(category);v.setRegistrationNumber(registrationNumber.toUpperCase(Locale.ROOT));v.setModel(model);
+        Vehicle v=new Vehicle();v.setOwnerId(u.getId());v.setCategory(category);v.setRegistrationNumber(registrationNumber.toUpperCase(Locale.ROOT));v.setModel(model);v.setPaymentInstructions(paymentInstructions==null?null:paymentInstructions.trim());
         try{applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);applyRentalModes(v,supportsWithDriver,supportsSelfDrive);
             for(MultipartFile f:photos)if(f!=null&&!f.isEmpty()){if(v.getPhotos().size()>=8)throw new IllegalArgumentException("Maximum 8 vehicle photos allowed.");v.getPhotos().add(uploads.upload(f,"asmj-ride/vehicle-photos/"+u.getId()+"/"+registrationNumber.replaceAll("[^A-Za-z0-9-]",""),"VEHICLE_PHOTO",false));}
             vehicles.save(v);return "redirect:/partner?vehicleAdded";
         }catch(RuntimeException ex){v.getPhotos().forEach(this::safeDelete);return "redirect:/partner?uploadError="+enc(ex.getMessage());}
     }
 
-    @PostMapping("/partner/vehicle/{id}/update") String updateVehicle(Authentication a,@PathVariable String id,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam(defaultValue="ACTIVE")String operationalStatus,@RequestParam(value="photos",required=false)List<MultipartFile> photos,@RequestParam(value="removePhotoIds",required=false)List<String> removeIds){
+    @PostMapping("/partner/vehicle/{id}/update") String updateVehicle(Authentication a,@PathVariable String id,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam(defaultValue="ACTIVE")String operationalStatus,@RequestParam(required=false)String paymentInstructions,@RequestParam(value="photos",required=false)List<MultipartFile> photos,@RequestParam(value="removePhotoIds",required=false)List<String> removeIds){
         var u=me(a);Vehicle v=vehicles.findById(id).orElseThrow();owner(u,v);
         if(!List.of("CAR","AUTO","BIKE","OTHER").contains(category)||registrationNumber.isBlank()||registrationNumber.length()>20)return "redirect:/partner?error=vehicle";
         List<UploadedAsset> removed=new ArrayList<>(),added=new ArrayList<>();
         try{
             applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);applyRentalModes(v,supportsWithDriver,supportsSelfDrive);
             if(!List.of("ACTIVE","MAINTENANCE","BLOCKED").contains(operationalStatus))throw new IllegalArgumentException("Invalid operational status.");
-            v.setOperationalStatus(operationalStatus);
+            v.setOperationalStatus(operationalStatus);if(u.getId().equals(v.getOwnerId()))v.setPaymentInstructions(paymentInstructions==null?null:paymentInstructions.trim());
             if(removeIds!=null)for(String rid:removeIds){var old=v.getPhotos().stream().filter(x->rid.equals(x.getId())).findFirst().orElse(null);if(old!=null){removed.add(old);v.getPhotos().remove(old);}}
             if(photos!=null)for(MultipartFile f:photos)if(f!=null&&!f.isEmpty()){if(v.getPhotos().size()>=8)throw new IllegalArgumentException("Maximum 8 vehicle photos allowed.");var asset=uploads.upload(f,"asmj-ride/vehicle-photos/"+v.getId(),"VEHICLE_PHOTO",false);v.getPhotos().add(asset);added.add(asset);}
             if(v.getPhotos().isEmpty())throw new IllegalArgumentException("At least one vehicle photo must remain.");

@@ -1,0 +1,1 @@
+package in.asmj.ride.repo; import in.asmj.ride.model.RentalReview; import org.springframework.data.mongodb.repository.MongoRepository; import java.util.Optional; public interface RentalReviewRepository extends MongoRepository<RentalReview,String>{ Optional<RentalReview> findByBookingId(String bookingId); }

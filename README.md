@@ -160,3 +160,7 @@ Phase 4 adds unified ASMJ Ride branding, SVG logo/favicon assets, responsive log
 ## Latest UI update – Phase 13
 
 The Admin dashboard now uses a responsive categorized Control Center with quick-access cards, grouped management links, and collapsible partner/agency/vehicle application tables. See `PHASE-13-ADMIN-CONTROL-CENTER.md`.
+
+
+## Rental marketplace workflow (Phase 16B–16E)
+See `README-PHASE-16B-16E.md` and `PHASE-16B-16E-RENTAL-WORKFLOW.md` for customer search, provider acceptance, driver journey, invoice, direct payment verification and reviews.

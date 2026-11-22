@@ -20,9 +20,14 @@
   <nav id="asmj-main-navigation" class="site-nav unified-site-nav" aria-label="Main navigation">
     <a href="/dashboard">Dashboard</a>
     <a sec:authorize="hasAnyAuthority('CUSTOMER','ROLE_CUSTOMER')" href="/customer">Book a ride</a>
+    <a sec:authorize="hasAnyAuthority('CUSTOMER','ROLE_CUSTOMER')" href="/rentals/search">Find rental vehicles</a>
+    <a sec:authorize="hasAnyAuthority('CUSTOMER','ROLE_CUSTOMER')" href="/rentals/my-bookings">My rental bookings</a>
     <a sec:authorize="hasAnyAuthority('DRIVER','ROLE_DRIVER')" href="/driver">Driver portal</a>
+    <a sec:authorize="hasAnyAuthority('DRIVER','ROLE_DRIVER')" href="/rentals/driver">Rental assignments</a>
     <a sec:authorize="hasAnyAuthority('FLEET_OWNER','ROLE_FLEET_OWNER','VEHICLE_OWNER','ROLE_VEHICLE_OWNER')" href="/fleet">Vehicle owner portal</a>
+    <a sec:authorize="hasAnyAuthority('FLEET_OWNER','ROLE_FLEET_OWNER','VEHICLE_OWNER','ROLE_VEHICLE_OWNER')" href="/rentals/provider">Rental bookings</a>
     <a sec:authorize="hasAnyAuthority('TRAVEL_AGENT','ROLE_TRAVEL_AGENT')" href="/partner">Travel agent portal</a>
+    <a sec:authorize="hasAnyAuthority('TRAVEL_AGENT','ROLE_TRAVEL_AGENT')" href="/rentals/provider">Rental bookings</a>
     <a sec:authorize="hasAnyAuthority('TRAVEL_AGENT','ROLE_TRAVEL_AGENT')" href="/agent/authorizations">Partner vehicle access</a>
     <a sec:authorize="hasAnyAuthority('FLEET_OWNER','ROLE_FLEET_OWNER')" href="/fleet/authorizations">Agent access requests</a>
     <a sec:authorize="hasAnyAuthority('ADMIN','ROLE_ADMIN')" href="/admin">Admin panel</a>
