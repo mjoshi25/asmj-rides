@@ -35,8 +35,9 @@ public class AccountController {
 
     private UserAccount current(Authentication authentication) { return users.findByEmailIgnoreCase(authentication.getName()).orElseThrow(); }
 
+    /** Legacy profile URL now resolves to the canonical Account & Settings page. */
     @GetMapping("/profile")
-    public String profileAlias(Authentication authentication, Model model, HttpSession session) { return account(authentication, model, session); }
+    public String profileAlias() { return "redirect:/account"; }
 
     @GetMapping("/account")
     public String account(Authentication authentication, Model model, HttpSession session) {

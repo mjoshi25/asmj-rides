@@ -46,7 +46,8 @@ public class SupportController {
                          @RequestParam String subject, @RequestParam String message,
                          @RequestParam(value="attachments",required=false) List<MultipartFile> attachments) {
         UserAccount u=me(a);
-        String cleanMobile=mobile==null?"":mobile.replaceAll("[\\s-]","");
+        // Always bind the support ticket to the verified account mobile; never trust a submitted form value.
+        String cleanMobile=u.getMobile()==null?"":u.getMobile().replaceAll("[\\s-]","");
         if (u.hasGrantedRole("ADMIN") || !cleanMobile.matches("[+]?[0-9]{10,15}") ||
                 !List.of("GENERAL","PAYMENT","TRIP","DRIVER","SAFETY","LOST_ITEM","OTHER").contains(category) ||
                 subject==null || subject.isBlank() || subject.length()>120 || message==null || message.isBlank() || message.length()>2000)
