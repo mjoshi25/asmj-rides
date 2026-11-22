@@ -16,31 +16,30 @@
     });
     menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => menu.removeAttribute('open')));
   });
-  document.querySelectorAll('.nav-toggle').forEach((toggle) => {
-    toggle.addEventListener('click', () => {
-      const header = toggle.closest('header');
+  // One delegated handler keeps the shared navigation working on every authenticated page.
+  document.addEventListener('click', (event) => {
+    const toggle = event.target.closest('.unified-nav-toggle');
+    if (toggle) {
+      const header = toggle.closest('.unified-app-header');
+      if (!header) return;
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!expanded));
       header.classList.toggle('nav-open', !expanded);
-    });
-    document.addEventListener('click', (event) => {
-      const header = toggle.closest('header');
-      if (header && !header.contains(event.target)) {
-        toggle.setAttribute('aria-expanded', 'false');
+      return;
+    }
+    const clickedHeader = event.target.closest('.unified-app-header');
+    document.querySelectorAll('.unified-app-header.nav-open').forEach((header) => {
+      if (!clickedHeader || clickedHeader !== header || event.target.closest('.unified-site-nav a, .unified-site-nav button')) {
         header.classList.remove('nav-open');
+        header.querySelector('.unified-nav-toggle')?.setAttribute('aria-expanded', 'false');
       }
     });
-    toggle.closest('header')?.querySelectorAll('.unified-site-nav a').forEach((link) => {
-      link.addEventListener('click', () => {
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.closest('header').classList.remove('nav-open');
-      });
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        toggle.setAttribute('aria-expanded', 'false');
-        toggle.closest('header').classList.remove('nav-open');
-      }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    document.querySelectorAll('.unified-app-header.nav-open').forEach((header) => {
+      header.classList.remove('nav-open');
+      header.querySelector('.unified-nav-toggle')?.setAttribute('aria-expanded', 'false');
     });
   });
 })();

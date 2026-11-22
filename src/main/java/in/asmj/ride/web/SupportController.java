@@ -42,7 +42,7 @@ public class SupportController {
 
     @PostMapping("/support/create")
     public String create(Authentication a, @RequestParam(required=false) String rideId,
-                         @RequestParam String mobile, @RequestParam String category,
+                         @RequestParam String category,
                          @RequestParam String subject, @RequestParam String message,
                          @RequestParam(value="attachments",required=false) List<MultipartFile> attachments) {
         UserAccount u=me(a);

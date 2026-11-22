@@ -386,3 +386,18 @@ header:not(.auth-header){min-height:76px;padding-inline:clamp(16px,3vw,48px)}hea
 .account-status{display:inline-flex;padding:4px 9px;border-radius:99px;background:#e6f7ef;color:#08734f;font-size:10px;font-weight:850}
 .account-photo-form{display:grid;gap:7px;min-width:0}.account-photo-form label{font-size:12px;font-weight:800;color:#29415a}.account-photo-form input[type=file]{width:100%;max-width:100%;min-width:0;padding:8px;border:1px dashed #b9cddd;border-radius:10px;background:#fff;font-size:12px}.account-photo-form small{color:#718198;font-size:10px}.account-photo-form .btn{justify-self:start}
 @media(max-width:680px){.account-profile-card{grid-template-columns:auto minmax(0,1fr);gap:13px;padding:15px}.account-avatar{width:66px;height:66px}.account-photo-form{grid-column:1/-1;padding-top:12px;border-top:1px solid #e3edf2}.account-page{margin:16px auto!important}}
+
+
+/* Phase 10: immutable support contact display and invariant shared header */
+.support-registered-mobile{display:flex;flex-direction:column;gap:8px;min-width:0}
+.support-field-label{display:block;color:#38516b;font-size:12px;font-weight:800}
+.support-mobile-value{display:flex;align-items:center;min-height:48px;padding:12px 14px;border:1px solid #cfe0eb;border-radius:12px;background:#edf4f8;color:#18324d;font-size:15px;font-weight:750;letter-spacing:.3px;user-select:text;cursor:default}
+.support-registered-mobile .field-help{display:block;max-width:520px;color:#526b82;font-size:11px;line-height:1.55}
+.unified-app-header{display:flex!important;align-items:center!important;justify-content:space-between!important;position:sticky!important;top:0!important}
+.unified-app-header .unified-header-actions{display:flex!important;align-items:center!important;margin-left:auto!important;visibility:visible!important;opacity:1!important}
+.unified-app-header .unified-nav-toggle{display:flex!important;visibility:visible!important;opacity:1!important;order:3!important;flex:0 0 42px!important}
+.unified-app-header .unified-profile-trigger{order:2!important}
+.unified-app-header .notification-link{order:1!important}
+.unified-app-header .unified-site-nav{position:absolute!important}
+.unified-app-header.nav-open .unified-site-nav{display:flex!important}
+@media(max-width:900px){.unified-app-header{display:flex!important;grid-template-columns:none!important}.unified-header-actions{margin-left:auto!important}.unified-app-header .unified-site-nav{right:10px!important;left:auto!important;top:calc(100% + 8px)!important}}
