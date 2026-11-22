@@ -427,3 +427,84 @@ body.page-admin .admin-console{width:min(1240px,calc(100% - 40px));margin:28px a
 @media(max-width:900px){.admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-welcome{align-items:flex-start;flex-direction:column}}
 @media(max-width:560px){body.page-admin .admin-console{width:calc(100% - 24px);margin:14px auto 40px;gap:14px}.admin-welcome{padding:21px 18px;border-radius:17px}.admin-welcome h1{font-size:27px}.admin-intro{font-size:12px;line-height:1.55}.admin-primary-action{width:100%;justify-content:space-between}.admin-quick-grid{gap:9px}.admin-quick-card{gap:9px;padding:12px 10px;border-radius:13px}.admin-card-icon{width:34px;height:34px;flex-basis:34px;font-size:18px}.admin-quick-card strong{font-size:11px}.admin-quick-card small{font-size:10px}.admin-section-grid{grid-template-columns:1fr;gap:10px}.admin-category{padding:15px;border-radius:14px}.admin-category-heading h2{font-size:14px}.admin-link-list a{padding:11px 8px;font-size:12px}.admin-records summary{padding:15px}.admin-table-wrap{padding:0 10px 12px}}
 @media(prefers-reduced-motion:reduce){.admin-quick-card{transition:none}.admin-quick-card:hover{transform:none}}
+
+/* Phase 14: fleet owner dashboard readability and responsive information hierarchy */
+body.page-partner main.fleet-dashboard{width:min(1380px,calc(100% - 48px));margin:28px auto 48px;padding:clamp(22px,3vw,40px);}
+.fleet-page-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;padding-bottom:22px;border-bottom:1px solid #e8eef3}
+.fleet-page-heading h1{margin:5px 0 8px!important;font-size:clamp(28px,3vw,39px)!important}
+.fleet-page-heading p{margin:0;max-width:700px;font-size:14px}
+.fleet-eyebrow{display:block;color:#07866d;font-size:10px;font-weight:900;letter-spacing:1.45px;line-height:1.4}
+.fleet-heading-action{flex:0 0 auto;min-width:150px}
+.fleet-jump-nav{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 4px;margin-bottom:8px}
+.fleet-jump-nav a{display:inline-flex;align-items:center;min-height:36px;padding:7px 13px;border:1px solid #dce7ee;border-radius:999px;background:#f8fbfc;color:#41566f;font-size:12px;font-weight:800;text-decoration:none;transition:.18s}
+.fleet-jump-nav a:hover,.fleet-jump-nav a:focus-visible{border-color:#9ddcca;background:#eaf8f3;color:#087f70;text-decoration:none}
+.fleet-metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:17px 0 20px}
+.fleet-metrics>.ride{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;min-height:104px;padding:17px 19px;border:1px solid #e0ebe9;border-radius:16px;background:linear-gradient(145deg,#fff,#f4fbf8);box-shadow:0 5px 18px rgba(18,37,67,.035)}
+.fleet-metrics>.ride small{font-size:12px;font-weight:700;color:#62748a}
+.fleet-metrics>.ride h2{margin:0!important;color:#087f70;font:900 clamp(25px,2.5vw,32px)/1.1 'Manrope',sans-serif;letter-spacing:-.8px}
+.fleet-section{display:block!important;margin:18px 0!important;padding:23px 25px!important;border:1px solid #e1eaf0!important;border-radius:19px!important;background:#fff!important;box-shadow:0 7px 24px rgba(18,37,67,.045)!important}
+.fleet-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px;padding-bottom:13px;border-bottom:1px solid #edf1f5}
+.fleet-section-heading h2{margin:4px 0 0!important;font-size:19px!important;letter-spacing:-.35px}
+.fleet-info-chip{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#edf8f5;color:#087c69;font-size:10px;font-weight:800;white-space:nowrap}
+.fleet-financial-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0}
+.fleet-financial-grid>article{min-width:0;padding:14px 15px;border:1px solid #e7edf2;border-radius:14px;background:#f9fbfd}
+.fleet-financial-grid>article small{display:block;min-height:38px;color:#687a90;font-size:11px;font-weight:700;line-height:1.45}
+.fleet-financial-grid>article h2{margin:7px 0 0!important;color:#142b48;font:900 clamp(19px,2vw,24px)/1.2 'Manrope',sans-serif;letter-spacing:-.5px}
+.fleet-financial-section>p{margin:14px 0 0;padding:11px 13px;border-left:3px solid #9bdcca;border-radius:0 9px 9px 0;background:#f5faf8;font-size:11px;line-height:1.55}
+.fleet-section form{max-width:none!important}
+.fleet-section .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px}
+.fleet-section .form-grid label{display:grid;gap:6px;margin:0}
+.fleet-section .form-grid button{grid-column:1/-1}
+.fleet-section .inline{flex-wrap:wrap;align-items:flex-end}
+.fleet-list-section{margin-top:24px!important}
+.fleet-list-section .ride-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fleet-list-section .ride-list>.ride{align-items:flex-start;justify-content:flex-start;flex-direction:column;gap:7px;padding:16px 18px;border-radius:14px;box-shadow:none;background:#fbfcfe}
+.fleet-list-section .ride-list>.ride b{font-size:14px}
+.fleet-list-section .ride-list>.ride p{margin:2px 0;font-size:12px;line-height:1.55}
+.fleet-subheading{margin:24px 0 12px;padding:0 0 10px}
+.fleet-subheading h2{font-size:16px!important}
+.fleet-footer-actions{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 0}
+.fleet-footer-actions .btn{min-width:160px}
+.fleet-dashboard #fleet-trips .ride-list>.ride{background:#fff}
+.fleet-dashboard .success,.fleet-dashboard .error{margin:12px 0}
+.fleet-dashboard form input,.fleet-dashboard form select{min-width:0}
+.fleet-dashboard .ride-list>p{padding:14px 16px;border:1px dashed #d8e3eb;border-radius:12px;background:#fafcfd;color:#718198;font-size:12px}
+@media(max-width:1050px){.fleet-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}.fleet-financial-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){body.page-partner main.fleet-dashboard{width:calc(100% - 24px);margin:15px auto 30px;padding:20px 16px}.fleet-page-heading{align-items:flex-start;flex-direction:column;gap:13px}.fleet-heading-action{width:100%}.fleet-jump-nav{flex-wrap:nowrap;overflow-x:auto;padding:13px 0 8px;scrollbar-width:thin}.fleet-jump-nav a{flex:0 0 auto}.fleet-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.fleet-metrics>.ride{min-height:86px;padding:13px}.fleet-metrics>.ride small{font-size:10px}.fleet-metrics>.ride h2{font-size:25px}.fleet-section{padding:17px 15px!important;margin:13px 0!important}.fleet-section-heading{align-items:flex-start;flex-direction:column;gap:7px}.fleet-info-chip{white-space:normal}.fleet-list-section .ride-list{grid-template-columns:1fr}.fleet-section .form-grid{grid-template-columns:1fr}.fleet-section .form-grid button{grid-column:auto}.fleet-section .inline{display:grid;grid-template-columns:1fr}.fleet-section .inline .btn{width:100%}.fleet-financial-grid>article{padding:12px}.fleet-financial-grid>article small{min-height:0}.fleet-financial-grid>article h2{font-size:19px}.fleet-footer-actions{display:grid;grid-template-columns:1fr}.fleet-footer-actions .btn{width:100%}}
+@media(max-width:380px){.fleet-metrics{grid-template-columns:1fr}.fleet-financial-grid{grid-template-columns:1fr}.fleet-financial-grid>article{display:flex;align-items:center;justify-content:space-between;gap:12px}.fleet-financial-grid>article small{max-width:58%}.fleet-financial-grid>article h2{white-space:nowrap}}
+
+/* Phase 15: consistent role-portal readability across Customer, Driver, Travel Agent and Admin */
+:root{--portal-ink:#14263f;--portal-muted:#687b92;--portal-line:#e2eaf1;--portal-soft:#f6fafb;--portal-accent:#0b987f}
+body.page-customer main.panel,body.page-driver main.panel,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page){width:min(1380px,calc(100% - 48px));margin:26px auto 48px;padding:clamp(22px,3vw,38px);border:1px solid var(--portal-line);border-radius:24px;background:#fff;box-shadow:0 14px 42px rgba(17,39,66,.065)}
+body.page-customer main.panel>h1,body.page-driver main.panel>h1,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>h1{margin:0 0 8px;color:var(--portal-ink);font:900 clamp(26px,3vw,36px)/1.18 'Manrope',sans-serif;letter-spacing:-.8px}
+body.page-customer main.panel>h1:after,body.page-driver main.panel>h1:after,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>h1:after{content:"";display:block;width:54px;height:4px;margin-top:13px;border-radius:9px;background:linear-gradient(90deg,#13ad8b,#60dabb)}
+body.page-customer main.panel>p,body.page-driver main.panel>p,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>p{color:var(--portal-muted);font-size:13px;line-height:1.7}
+body.page-customer main.panel>h2,body.page-driver main.panel>h2,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>h2{display:flex;align-items:center;gap:10px;margin:28px 0 13px;padding:0 0 11px;border-bottom:1px solid #eaf0f4;color:var(--portal-ink);font:850 18px/1.3 'Manrope',sans-serif;letter-spacing:-.25px}
+body.page-customer main.panel>section.ride,body.page-driver main.panel>section.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>section.ride{margin:14px 0;padding:18px 20px;border:1px solid var(--portal-line);border-radius:17px;background:linear-gradient(145deg,#fff,#fbfdfd);box-shadow:0 5px 18px rgba(20,43,69,.035)}
+body.page-customer main.panel article.ride,body.page-driver main.panel article.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride{min-width:0;margin:11px 0;padding:17px 19px;border:1px solid #e2eaf0;border-radius:15px;background:#fff;box-shadow:0 4px 15px rgba(20,43,69,.035)}
+body.page-customer main.panel article.ride p,body.page-driver main.panel article.ride p,body.page-partner main.panel article.ride p{color:#63768d;font-size:12px;line-height:1.6}
+body.page-customer main.panel article.ride b,body.page-driver main.panel article.ride b,body.page-partner main.panel article.ride b{color:#1b3451;font-size:14px}
+body.page-customer main.panel .stats-grid,body.page-driver main.panel .stats-grid,body.page-partner main.panel .stats-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0 22px}
+body.page-customer main.panel .stats-grid>.ride,body.page-driver main.panel .stats-grid>.ride,body.page-partner main.panel .stats-grid>.ride{display:flex;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:92px;margin:0;padding:15px 17px;border:1px solid #dfece8;border-radius:15px;background:linear-gradient(145deg,#fff,#f2faf7);box-shadow:none}
+body.page-customer main.panel .stats-grid>.ride small,body.page-driver main.panel .stats-grid>.ride small,body.page-partner main.panel .stats-grid>.ride small{color:#687c91;font-size:11px;font-weight:750}
+body.page-customer main.panel .stats-grid>.ride h2,body.page-driver main.panel .stats-grid>.ride h2,body.page-partner main.panel .stats-grid>.ride h2{margin:0!important;padding:0;border:0;color:#078674;font:900 25px/1.15 'Manrope',sans-serif}
+body.page-customer main.panel form:not(.inline),body.page-driver main.panel form:not(.inline),body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) form:not(.inline){min-width:0}
+body.page-customer main.panel label,body.page-driver main.panel label,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) label{color:#40546d;font-size:11px;font-weight:800}
+body.page-customer main.panel input:not([type=checkbox]):not([type=radio]),body.page-customer main.panel select,body.page-customer main.panel textarea,body.page-driver main.panel input:not([type=checkbox]):not([type=radio]),body.page-driver main.panel select,body.page-driver main.panel textarea,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) input:not([type=checkbox]):not([type=radio]),body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) select,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) textarea{max-width:100%;min-width:0}
+body.page-customer main.panel .btn,body.page-driver main.panel .btn,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) .btn{min-height:40px;padding:10px 15px;border-radius:10px;font-size:12px;font-weight:850}
+body.page-driver main.panel>form.inline,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>form.inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:13px 15px;border:1px solid #e3ecef;border-radius:13px;background:#f8fbfc}
+body.page-driver main.panel article.ride form,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+body.page-driver main.panel article.ride form label,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form label{display:grid;gap:6px;min-width:150px;flex:1}
+body.page-driver main.panel article.ride form .btn,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form .btn{flex:0 0 auto}
+body.page-admin .admin-console{width:min(1440px,calc(100% - 48px));gap:20px}
+body.page-admin .admin-welcome{padding:clamp(22px,3vw,34px);border-radius:22px}
+body.page-admin .admin-quick-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+body.page-admin .admin-quick-card{min-height:82px;padding:14px 15px;border-radius:14px}
+body.page-admin .admin-section-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+body.page-admin .admin-category{padding:17px;border-radius:16px}
+body.page-admin .admin-link-list a{min-height:40px;font-size:12px}
+body.page-admin .admin-records{display:grid;gap:12px}
+body.page-admin .admin-table-wrap table{font-size:12px}
+@media(max-width:1100px){body.page-admin .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.page-admin .admin-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){body.page-customer main.panel,body.page-driver main.panel,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page){width:calc(100% - 24px);margin:14px auto 30px;padding:19px 15px;border-radius:18px}body.page-customer main.panel>h1,body.page-driver main.panel>h1,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>h1{font-size:26px}body.page-customer main.panel .stats-grid,body.page-driver main.panel .stats-grid,body.page-partner main.panel .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}body.page-customer main.panel .stats-grid>.ride,body.page-driver main.panel .stats-grid>.ride,body.page-partner main.panel .stats-grid>.ride{min-height:78px;padding:12px}body.page-customer main.panel .stats-grid>.ride h2,body.page-driver main.panel .stats-grid>.ride h2,body.page-partner main.panel .stats-grid>.ride h2{font-size:22px}body.page-customer main.panel>section.ride,body.page-driver main.panel>section.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>section.ride{padding:15px 13px}body.page-customer main.panel article.ride,body.page-driver main.panel article.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride{padding:14px 13px}body.page-driver main.panel article.ride form,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form{display:grid;grid-template-columns:1fr;align-items:stretch}body.page-driver main.panel article.ride form label,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form label{min-width:0}body.page-driver main.panel article.ride form .btn,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form .btn{width:100%}body.page-admin .admin-console{width:calc(100% - 24px);margin:14px auto 32px;gap:13px}body.page-admin .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.page-admin .admin-section-grid{grid-template-columns:1fr;gap:10px}body.page-admin .admin-quick-card{min-height:72px;padding:11px 10px}body.page-admin .admin-category{padding:14px}}
+@media(max-width:390px){body.page-customer main.panel .stats-grid,body.page-driver main.panel .stats-grid,body.page-partner main.panel .stats-grid{grid-template-columns:1fr}body.page-admin .admin-quick-grid{grid-template-columns:1fr}}
