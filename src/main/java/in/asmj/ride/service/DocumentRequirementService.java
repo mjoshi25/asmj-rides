@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 @Service
 public class DocumentRequirementService {
-    public static final List<String> ROLES = List.of("DRIVER","FLEET_OWNER","CUSTOMER","VEHICLE");
+    public static final List<String> ROLES = List.of("DRIVER","FLEET_OWNER","TRAVEL_AGENT","CUSTOMER","VEHICLE");
     private static final Map<String,List<DocumentRequirementConfig.DocumentDefinition>> DEFAULTS = defaults();
     private static final Pattern CODE = Pattern.compile("[A-Z][A-Z0-9_]{2,39}");
     private final DocumentRequirementConfigRepository repository;
@@ -19,6 +19,7 @@ public class DocumentRequirementService {
         Map<String,List<DocumentRequirementConfig.DocumentDefinition>> m=new LinkedHashMap<>();
         m.put("DRIVER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","DRIVER",true),def("DRIVING_LICENCE","Driving licence","DRIVER",true),def("ADDRESS_PROOF","Address proof","DRIVER",false))));
         m.put("FLEET_OWNER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","FLEET_OWNER",true),def("BUSINESS_REGISTRATION","Business registration","FLEET_OWNER",true),def("ADDRESS_PROOF","Address proof","FLEET_OWNER",false),def("DRIVING_LICENCE","Driving licence","FLEET_OWNER",false))));
+        m.put("TRAVEL_AGENT",new ArrayList<>(List.of(def("IDENTITY","Identity proof","TRAVEL_AGENT",true),def("BUSINESS_REGISTRATION","Business registration","TRAVEL_AGENT",true),def("ADDRESS_PROOF","Address proof","TRAVEL_AGENT",false))));
         m.put("CUSTOMER",new ArrayList<>(List.of(def("IDENTITY","Identity proof","CUSTOMER",false),def("ADDRESS_PROOF","Address proof","CUSTOMER",false))));
         m.put("VEHICLE",new ArrayList<>(List.of(def("RC","Registration Certificate (RC)","VEHICLE",true),def("INSURANCE","Insurance","VEHICLE",true),def("PERMIT","Permit","VEHICLE",false),def("FITNESS","Fitness certificate","VEHICLE",false),def("PUC","Pollution certificate (PUC)","VEHICLE",false))));
         return m;

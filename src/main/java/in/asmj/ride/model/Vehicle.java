@@ -16,6 +16,9 @@ public class Vehicle {
     private List<String> dropLocationKeys = new ArrayList<>();
     private List<String> allowedRouteKeys = new ArrayList<>();
     private boolean supportsOneWay = true, supportsRoundTrip = true;
+    // Marketplace rental modes; legacy vehicles default to with-driver only until owner enables self-drive.
+    private boolean supportsWithDriver = true, supportsSelfDrive = false;
+    private String managingAgentId;
     private String operationalStatus = "ACTIVE"; // ACTIVE, MAINTENANCE, BLOCKED
     private List<UploadedAsset> photos = new ArrayList<>(), documents = new ArrayList<>();
 
@@ -31,6 +34,9 @@ public class Vehicle {
     public List<String> getPickupLocationKeys(){return pickupLocationKeys;} public void setPickupLocationKeys(List<String> v){pickupLocationKeys=v==null?new ArrayList<>():new ArrayList<>(v);}
     public List<String> getDropLocationKeys(){return dropLocationKeys;} public void setDropLocationKeys(List<String> v){dropLocationKeys=v==null?new ArrayList<>():new ArrayList<>(v);}
     public List<String> getAllowedRouteKeys(){return allowedRouteKeys;} public void setAllowedRouteKeys(List<String> v){allowedRouteKeys=v==null?new ArrayList<>():new ArrayList<>(v);}
+    public boolean isSupportsWithDriver(){return supportsWithDriver;} public void setSupportsWithDriver(boolean v){supportsWithDriver=v;}
+    public boolean isSupportsSelfDrive(){return supportsSelfDrive;} public void setSupportsSelfDrive(boolean v){supportsSelfDrive=v;}
+    public String getManagingAgentId(){return managingAgentId;} public void setManagingAgentId(String v){managingAgentId=v;}
     public boolean isSupportsOneWay(){return supportsOneWay;} public void setSupportsOneWay(boolean v){supportsOneWay=v;}
     public boolean isSupportsRoundTrip(){return supportsRoundTrip;} public void setSupportsRoundTrip(boolean v){supportsRoundTrip=v;}
     public String getOperationalStatus(){return operationalStatus;} public void setOperationalStatus(String v){operationalStatus=v;}

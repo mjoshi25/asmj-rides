@@ -6,11 +6,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Objects;
 
 @Document("users")
 public class UserAccount {
     @Id private String id;
     private String name, email, mobile, passwordHash, role, status = "PENDING";
+    // New multi-role field. Legacy documents continue to use the primary `role` field.
+    private List<String> roles = new ArrayList<>();
     private boolean mobileVerified, available, fleetOwnerDriverEnabled;
     private String fleetOwnerId;
     private String pendingFleetOwnerId;
@@ -42,7 +47,35 @@ public class UserAccount {
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String value) { passwordHash = value; }
     public String getRole() { return role; }
-    public void setRole(String value) { role = value; }
+    public void setRole(String value) {
+        role = normalizeRole(value);
+        if (roles == null) roles = new ArrayList<>();
+        if (role != null && !roles.contains(role)) roles.add(role);
+    }
+    public List<String> getRoles() {
+        LinkedHashSet<String> all = new LinkedHashSet<>();
+        if (roles != null) roles.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).forEach(all::add);
+        if (role != null) all.add(normalizeRole(role));
+        return new ArrayList<>(all);
+    }
+    public void setRoles(List<String> values) {
+        LinkedHashSet<String> clean = new LinkedHashSet<>();
+        if (values != null) values.stream().filter(Objects::nonNull).map(UserAccount::normalizeRole).forEach(clean::add);
+        if (role != null) clean.add(normalizeRole(role));
+        roles = new ArrayList<>(clean);
+    }
+    public boolean hasRole(String value) { return value != null && getRoles().contains(normalizeRole(value)); }
+    public void addRole(String value) {
+        String normalized = normalizeRole(value);
+        if (normalized == null) return;
+        if (roles == null) roles = new ArrayList<>();
+        if (!roles.contains(normalized)) roles.add(normalized);
+    }
+    private static String normalizeRole(String value) {
+        if (value == null || value.isBlank()) return null;
+        String normalized = value.trim().toUpperCase(Locale.ROOT);
+        return "VEHICLE_OWNER".equals(normalized) ? "FLEET_OWNER" : normalized;
+    }
     public String getStatus() { return status; }
     public void setStatus(String value) { status = value; }
     public boolean isAvailable() { return available; }

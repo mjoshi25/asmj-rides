@@ -54,7 +54,7 @@ public class AuthController {
         }
 
         UserAccount user = account.get();
-        if ("ADMIN".equals(user.getRole())) {
+        if (user.hasRole("ADMIN")) {
             model.addAttribute("error", "Administrator accounts do not use customer mobile verification.");
             return "verify-mobile";
         }
@@ -121,7 +121,8 @@ public class AuthController {
             model.addAttribute("error", "Email already registered.");
             return "register";
         }
-        if (role == null || !role.matches("CUSTOMER|DRIVER|FLEET_OWNER")) role = "CUSTOMER";
+        if (role == null || !role.matches("CUSTOMER|DRIVER|FLEET_OWNER|VEHICLE_OWNER|TRAVEL_AGENT")) role = "CUSTOMER";
+        if ("VEHICLE_OWNER".equals(role)) role = "FLEET_OWNER";
 
         UserAccount user = new UserAccount();
         user.setName(name.trim());
@@ -138,9 +139,10 @@ public class AuthController {
     @GetMapping("/dashboard")
     String dashboard(org.springframework.security.core.Authentication authentication) {
         var user = repository.findByEmailIgnoreCase(authentication.getName()).orElseThrow();
-        return "redirect:" + (user.getRole().equals("ADMIN") ? "/admin"
+        return "redirect:" + (user.hasRole("ADMIN") ? "/admin"
                 : user.getRole().equals("CUSTOMER") ? "/customer"
-                : user.getRole().equals("DRIVER") ? "/driver" : "/fleet");
+                : user.getRole().equals("DRIVER") ? "/driver"
+                : user.getRole().equals("TRAVEL_AGENT") ? "/agent" : "/fleet");
     }
 
     private void clearActiveCode(UserAccount user) {

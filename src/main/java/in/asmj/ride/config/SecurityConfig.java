@@ -19,14 +19,14 @@ public class SecurityConfig {
         return email -> {
             var user=repository.findByEmailIgnoreCase(email).orElseThrow(()->new UsernameNotFoundException("Account not found"));
             
-if (!"ADMIN".equals(user.getRole()) && !user.isMobileVerified()) {
+if (!user.hasRole("ADMIN") && !user.isMobileVerified()) {
     throw new DisabledException("Verify your mobile first");
 }
 
 if ("SUSPENDED".equals(user.getStatus())) {
     throw new DisabledException("Account suspended");
 }
-            return User.withUsername(user.getEmail()).password(user.getPasswordHash()).roles(user.getRole()).build();
+            return User.withUsername(user.getEmail()).password(user.getPasswordHash()).roles(user.getRoles().toArray(String[]::new)).build();
         };
     }
 
@@ -39,16 +39,18 @@ if ("SUSPENDED".equals(user.getStatus())) {
         http.authenticationProvider(provider).authorizeHttpRequests(auth->auth
             .requestMatchers("/","/register","/verify-mobile","/login","/access-denied","/css/**","/js/**","/images/**","/favicon.ico","/manifest.webmanifest","/actuator/health","/actuator/health/**").permitAll()
             .requestMatchers("/admin","/admin/**").hasRole("ADMIN")
-            .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
-            .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER")
+            .requestMatchers("/files/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","TRAVEL_AGENT","ADMIN")
+            .requestMatchers("/partner","/partner/**").hasAnyRole("DRIVER","FLEET_OWNER","TRAVEL_AGENT")
+            .requestMatchers("/agent","/agent/**").hasRole("TRAVEL_AGENT")
             .requestMatchers("/fleet","/fleet/**").hasRole("FLEET_OWNER")
             .requestMatchers("/admin/rides/**","/admin/operations/**","/admin/payments/**").hasRole("ADMIN")
             .requestMatchers("/driver","/driver/**").hasAnyRole("DRIVER","FLEET_OWNER")
             .requestMatchers("/customer","/customer/**","/rides/book","/rides/*/cancel").hasRole("CUSTOMER")
             .requestMatchers("/rides/*/accept","/rides/*/status","/rides/*/location","/rides/*/return/**","/rides/*/assignment/respond").hasAnyRole("DRIVER","FLEET_OWNER")
             .requestMatchers("/locations/**","/rides/estimate","/rides/available-vehicles").hasRole("CUSTOMER")
-            .requestMatchers("/notifications","/notifications/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
-            .requestMatchers("/payments","/payments/**","/support","/support/**","/rides/*/review","/rides/*/sos","/rides/*/complaint").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
+            .requestMatchers("/notifications","/notifications/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","TRAVEL_AGENT","ADMIN")
+            .requestMatchers("/payments","/payments/**").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","ADMIN")
+            .requestMatchers("/support","/support/**","/rides/*/review","/rides/*/sos","/rides/*/complaint").hasAnyRole("CUSTOMER","DRIVER","FLEET_OWNER","TRAVEL_AGENT","ADMIN")
             .anyRequest().authenticated())
             .formLogin(form->form.loginPage("/login").defaultSuccessUrl("/dashboard",true).failureUrl("/login?error").permitAll())
             .exceptionHandling(ex->ex.accessDeniedPage("/access-denied"))

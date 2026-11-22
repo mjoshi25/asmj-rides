@@ -145,3 +145,7 @@ Admin → Documents now has individual approve/reject/pending controls for partn
 ## Demo fleet and booking search
 
 For the optional staging-only demo dataset (2 fleet owners, 4 drivers, 3 customers and 5 approved vehicles with fictional watermarked documents), see [DEMO-DATA-SETUP.md](DEMO-DATA-SETUP.md). Demo seeding is disabled by default and requires `DEMO_SEED_ENABLED=true` plus a strong `DEMO_SEED_PASSWORD`.
+
+## Vehicle rental marketplace enhancement (development branch)
+
+The supplied ASMJ Ride codebase is being extended into the ASMJ Vehicle Rental marketplace while preserving the legacy ride workflow. See [MARKETPLACE-MIGRATION-STATUS.md](MARKETPLACE-MIGRATION-STATUS.md) for implemented foundations, remaining work and rollout safeguards. New rental bookings use a separate `rentalBookings` collection; existing `rides` records are not repurposed.
