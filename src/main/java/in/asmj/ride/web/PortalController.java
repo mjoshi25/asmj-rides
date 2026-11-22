@@ -27,7 +27,14 @@ public class PortalController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    @GetMapping("/partner") String partner(Authentication a,Model m){var u=me(a);m.addAttribute("name",u.getName());m.addAttribute("role",u.getGrantedRoles().contains("TRAVEL_AGENT")?"TRAVEL_AGENT":(u.getGrantedRoles().contains("FLEET_OWNER")?"FLEET_OWNER":u.getRole()));m.addAttribute("user",u);m.addAttribute("agentProfile",agentProfiles.findByUserId(u.getId()).orElseGet(TravelAgentProfile::new));m.addAttribute("vehicles",vehicles.findByOwnerId(u.getId()));m.addAttribute("pendingFleetOwner",u.getPendingFleetOwnerId()==null?null:users.findById(u.getPendingFleetOwnerId()).orElse(null));m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("cloudinaryReady",uploads.configured());m.addAttribute("userDocumentDefinitions",documentRequirements.definitions(u.getGrantedRoles().contains("TRAVEL_AGENT")?"TRAVEL_AGENT":(u.getGrantedRoles().contains("FLEET_OWNER")?"FLEET_OWNER":u.getRole())).stream().filter(DocumentRequirementConfig.DocumentDefinition::isActive).toList());m.addAttribute("vehicleDocumentDefinitions",documentRequirements.definitions("VEHICLE").stream().filter(DocumentRequirementConfig.DocumentDefinition::isActive).toList());return "partner";}
+    private List<Vehicle> portalVehicles(UserAccount user) {
+        List<Vehicle> result=new ArrayList<>(vehicles.findByOwnerId(user.getId()));
+        if(user.hasGrantedRole("TRAVEL_AGENT")) for(Vehicle vehicle:agentAuthorizations.findManageableVehicles(user.getId()))
+            if(result.stream().noneMatch(existing->existing.getId().equals(vehicle.getId()))) result.add(vehicle);
+        return result;
+    }
+
+    @GetMapping("/partner") String partner(Authentication a,Model m){var u=me(a);m.addAttribute("name",u.getName());m.addAttribute("role",u.getGrantedRoles().contains("TRAVEL_AGENT")?"TRAVEL_AGENT":(u.getGrantedRoles().contains("FLEET_OWNER")?"FLEET_OWNER":u.getRole()));m.addAttribute("user",u);m.addAttribute("agentProfile",agentProfiles.findByUserId(u.getId()).orElseGet(TravelAgentProfile::new));m.addAttribute("vehicles",portalVehicles(u));m.addAttribute("pendingFleetOwner",u.getPendingFleetOwnerId()==null?null:users.findById(u.getPendingFleetOwnerId()).orElse(null));m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());m.addAttribute("cloudinaryReady",uploads.configured());m.addAttribute("userDocumentDefinitions",documentRequirements.definitions(u.getGrantedRoles().contains("TRAVEL_AGENT")?"TRAVEL_AGENT":(u.getGrantedRoles().contains("FLEET_OWNER")?"FLEET_OWNER":u.getRole())).stream().filter(DocumentRequirementConfig.DocumentDefinition::isActive).toList());m.addAttribute("vehicleDocumentDefinitions",documentRequirements.definitions("VEHICLE").stream().filter(DocumentRequirementConfig.DocumentDefinition::isActive).toList());return "partner";}
 
 
     @GetMapping("/agent") String travelAgent(Authentication a,Model m){
@@ -36,7 +43,7 @@ public class PortalController {
         m.addAttribute("role","TRAVEL_AGENT");
         m.addAttribute("user",u);
         m.addAttribute("agentProfile",agentProfiles.findByUserId(u.getId()).orElseGet(TravelAgentProfile::new));
-        m.addAttribute("vehicles",vehicles.findByOwnerId(u.getId()));
+        m.addAttribute("vehicles",portalVehicles(u));
         m.addAttribute("pendingFleetOwner",null);
         m.addAttribute("cities",cities.findByActiveTrueOrderByCityAsc());
         m.addAttribute("cloudinaryReady",uploads.configured());
@@ -116,7 +123,13 @@ public class PortalController {
         String firstCityId=pickups.get(0).split("::",2)[0];ServiceCity first=cities.findById(firstCityId).orElseThrow();v.setBaseCityId(first.getId());v.setBaseCity(first.getCity());
     }
 
-    @PostMapping("/partner/vehicle") String add(Authentication a,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam("photos") List<MultipartFile> photos){
+    private void applyRentalModes(Vehicle vehicle, boolean withDriver, boolean selfDrive){
+        if(!withDriver && !selfDrive) throw new IllegalArgumentException("Select at least one rental mode: with driver or self-drive.");
+        vehicle.setSupportsWithDriver(withDriver);
+        vehicle.setSupportsSelfDrive(selfDrive);
+    }
+
+    @PostMapping("/partner/vehicle") String add(Authentication a,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam("photos") List<MultipartFile> photos){
         var u=me(a);if(!(u.hasGrantedRole("DRIVER")||u.hasGrantedRole("FLEET_OWNER")||u.hasGrantedRole("TRAVEL_AGENT")))return "redirect:/partner";
         if(u.hasGrantedRole("TRAVEL_AGENT")){
             TravelAgentProfile profile=agentProfiles.findByUserId(u.getId()).orElse(null);
@@ -125,18 +138,18 @@ public class PortalController {
         if(!List.of("CAR","AUTO","BIKE","OTHER").contains(category)||registrationNumber==null||registrationNumber.isBlank()||registrationNumber.length()>20)return "redirect:/partner?error=vehicle";
         if(photos==null||photos.stream().filter(f->f!=null&&!f.isEmpty()).count()<1)return "redirect:/partner?uploadError=vehiclePhotoRequired";
         Vehicle v=new Vehicle();v.setOwnerId(u.getId());v.setCategory(category);v.setRegistrationNumber(registrationNumber.toUpperCase(Locale.ROOT));v.setModel(model);
-        try{applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);
+        try{applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);applyRentalModes(v,supportsWithDriver,supportsSelfDrive);
             for(MultipartFile f:photos)if(f!=null&&!f.isEmpty()){if(v.getPhotos().size()>=8)throw new IllegalArgumentException("Maximum 8 vehicle photos allowed.");v.getPhotos().add(uploads.upload(f,"asmj-ride/vehicle-photos/"+u.getId()+"/"+registrationNumber.replaceAll("[^A-Za-z0-9-]",""),"VEHICLE_PHOTO",false));}
             vehicles.save(v);return "redirect:/partner?vehicleAdded";
         }catch(RuntimeException ex){v.getPhotos().forEach(this::safeDelete);return "redirect:/partner?uploadError="+enc(ex.getMessage());}
     }
 
-    @PostMapping("/partner/vehicle/{id}/update") String updateVehicle(Authentication a,@PathVariable String id,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="ACTIVE")String operationalStatus,@RequestParam(value="photos",required=false)List<MultipartFile> photos,@RequestParam(value="removePhotoIds",required=false)List<String> removeIds){
+    @PostMapping("/partner/vehicle/{id}/update") String updateVehicle(Authentication a,@PathVariable String id,@RequestParam String category,@RequestParam String registrationNumber,@RequestParam(required=false)String model,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="false")boolean supportsWithDriver,@RequestParam(defaultValue="false")boolean supportsSelfDrive,@RequestParam(defaultValue="ACTIVE")String operationalStatus,@RequestParam(value="photos",required=false)List<MultipartFile> photos,@RequestParam(value="removePhotoIds",required=false)List<String> removeIds){
         var u=me(a);Vehicle v=vehicles.findById(id).orElseThrow();owner(u,v);
         if(!List.of("CAR","AUTO","BIKE","OTHER").contains(category)||registrationNumber.isBlank()||registrationNumber.length()>20)return "redirect:/partner?error=vehicle";
         List<UploadedAsset> removed=new ArrayList<>(),added=new ArrayList<>();
         try{
-            applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);
+            applyCoverage(v,pickupLocations,dropLocations,allowedRouteKeys,supportsOneWay,supportsRoundTrip);applyRentalModes(v,supportsWithDriver,supportsSelfDrive);
             if(!List.of("ACTIVE","MAINTENANCE","BLOCKED").contains(operationalStatus))throw new IllegalArgumentException("Invalid operational status.");
             v.setOperationalStatus(operationalStatus);
             if(removeIds!=null)for(String rid:removeIds){var old=v.getPhotos().stream().filter(x->rid.equals(x.getId())).findFirst().orElse(null);if(old!=null){removed.add(old);v.getPhotos().remove(old);}}
@@ -144,6 +157,17 @@ public class PortalController {
             if(v.getPhotos().isEmpty())throw new IllegalArgumentException("At least one vehicle photo must remain.");
             v.setCategory(category);v.setRegistrationNumber(registrationNumber.toUpperCase(Locale.ROOT));v.setModel(model);v.setStatus("PENDING");vehicles.save(v);removed.forEach(this::safeDelete);return "redirect:/partner?vehicleUpdated";
         }catch(RuntimeException ex){added.forEach(this::safeDelete);return "redirect:/partner?uploadError="+enc(ex.getMessage());}
+    }
+
+    @PostMapping("/partner/vehicle/{id}/availability") String updateAvailability(Authentication a,@PathVariable String id,
+            @RequestParam String operationalStatus,@RequestParam(required=false) String availabilityNote){
+        var u=me(a);Vehicle v=vehicles.findById(id).orElseThrow();
+        if(!u.getId().equals(v.getOwnerId()) && !(u.hasGrantedRole("TRAVEL_AGENT") && agentAuthorizations.canManage(u.getId(),v.getId(),"MANAGE_AVAILABILITY"))) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if(!List.of("ACTIVE","MAINTENANCE","BLOCKED").contains(operationalStatus)) return "redirect:/partner?availabilityError";
+        v.setOperationalStatus(operationalStatus);
+        v.setAvailabilityNote(availabilityNote==null?null:availabilityNote.trim());
+        vehicles.save(v);
+        return "redirect:/partner?availabilityUpdated";
     }
 
     @PostMapping("/admin/vehicle/{id}/coverage") String adminVehicleCoverage(@PathVariable String id,@RequestParam(required=false)List<String> pickupLocations,@RequestParam(required=false)List<String> dropLocations,@RequestParam(required=false)List<String> allowedRouteKeys,@RequestParam(defaultValue="false")boolean supportsOneWay,@RequestParam(defaultValue="false")boolean supportsRoundTrip,@RequestParam(defaultValue="ACTIVE")String operationalStatus){
@@ -157,7 +181,22 @@ public class PortalController {
         UploadedAsset asset=null;List<UploadedAsset> replaced=new ArrayList<>();try{asset=uploads.upload(file,"asmj-ride/vehicle-documents/"+v.getId(),documentType,true);asset.setExpiryDate(expiryDate);v.getDocuments().removeIf(x->{if(documentType.equals(x.getCategory())){replaced.add(x);return true;}return false;});v.getDocuments().add(asset);if(documentRequirements.mandatory("VEHICLE").contains(documentType))v.setStatus("PENDING");vehicles.save(v);replaced.forEach(this::safeDelete);return "redirect:/partner?vehicleDocumentUploaded";}catch(RuntimeException ex){safeDelete(asset);return "redirect:/partner?uploadError="+enc(ex.getMessage());}
     }
 
-    @PostMapping("/partner/vehicle/{id}/assign")String assignDriver(Authentication a,@PathVariable String id,@RequestParam String driverEmail){var owner=me(a);if(!(owner.getGrantedRoles().contains("FLEET_OWNER")||owner.getGrantedRoles().contains("TRAVEL_AGENT")))return "redirect:/partner";if(owner.getGrantedRoles().contains("TRAVEL_AGENT")){TravelAgentProfile profile=agentProfiles.findByUserId(owner.getId()).orElse(null);if(profile==null||!profile.isOwnFleetEnabled()||!"APPROVED".equals(profile.getVerificationStatus())||!"APPROVED".equals(owner.getStatus()))return "redirect:/agent?agencyApprovalRequired";}var driver=users.findByEmailIgnoreCase(driverEmail).orElse(null);var v=vehicles.findById(id).orElseThrow();if(driver==null||!driver.hasGrantedRole("DRIVER")||!"APPROVED".equals(driver.getStatus())||!driver.isMobileVerified()||!owner.getId().equals(v.getOwnerId()))return "redirect:/partner?error=driver";v.setAssignedDriverId(driver.getId());vehicles.save(v);driver.setFleetOwnerId(owner.getId());users.save(driver);return "redirect:/partner?assigned";}
+    @PostMapping("/partner/vehicle/{id}/assign") String assignDriver(Authentication a,@PathVariable String id,@RequestParam String driverEmail){
+        UserAccount manager=me(a);Vehicle vehicle=vehicles.findById(id).orElseThrow();
+        if(!manager.hasGrantedRole("FLEET_OWNER")&&!manager.hasGrantedRole("TRAVEL_AGENT"))return "redirect:/partner";
+        boolean ownVehicle=manager.getId().equals(vehicle.getOwnerId());
+        if(manager.hasGrantedRole("TRAVEL_AGENT")){
+            TravelAgentProfile profile=agentProfiles.findByUserId(manager.getId()).orElse(null);
+            if(profile==null||!"APPROVED".equals(profile.getVerificationStatus())||!"APPROVED".equals(manager.getStatus()))return "redirect:/agent?agencyApprovalRequired";
+            if(ownVehicle&&!profile.isOwnFleetEnabled())return "redirect:/agent?agencyApprovalRequired";
+            if(!ownVehicle&&!agentAuthorizations.canManage(manager.getId(),vehicle.getId(),"ASSIGN_DRIVER"))return "redirect:/partner?error=driverPermission";
+        } else if(!ownVehicle) return "redirect:/partner?error=driverPermission";
+        var driver=users.findByEmailIgnoreCase(driverEmail).orElse(null);
+        if(driver==null||!driver.hasGrantedRole("DRIVER")||!"APPROVED".equals(driver.getStatus())||!driver.isMobileVerified())return "redirect:/partner?error=driver";
+        vehicle.setAssignedDriverId(driver.getId());vehicles.save(vehicle);
+        if(ownVehicle){driver.setFleetOwnerId(manager.getId());users.save(driver);}
+        return "redirect:/partner?assigned";
+    }
 
     @GetMapping("/admin")String admin(Model m){m.addAttribute("partners",users.findByRoleIn(List.of("DRIVER","FLEET_OWNER","TRAVEL_AGENT")));m.addAttribute("vehicles",vehicles.findAll());m.addAttribute("travelAgents",agentProfiles.findAll());return "admin";}
     @PostMapping("/admin/partner/{id}")String approve(@PathVariable String id,@RequestParam String status){var u=users.findById(id).orElseThrow();if(!List.of("APPROVED","REJECTED","PENDING","SUSPENDED").contains(status))throw new IllegalArgumentException();if(u.hasGrantedRole("TRAVEL_AGENT") && "APPROVED".equals(status))return "redirect:/admin?agentProfileApprovalRequired";if("APPROVED".equals(status)&&!documentRequirements.verifiedUserDocuments(u,u.hasGrantedRole("TRAVEL_AGENT")?"TRAVEL_AGENT":u.getRole()))return "redirect:/admin?documentsRequired";u.setStatus(status);users.save(u);return "redirect:/admin";}

@@ -508,3 +508,29 @@ body.page-admin .admin-table-wrap table{font-size:12px}
 @media(max-width:1100px){body.page-admin .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.page-admin .admin-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){body.page-customer main.panel,body.page-driver main.panel,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page){width:calc(100% - 24px);margin:14px auto 30px;padding:19px 15px;border-radius:18px}body.page-customer main.panel>h1,body.page-driver main.panel>h1,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>h1{font-size:26px}body.page-customer main.panel .stats-grid,body.page-driver main.panel .stats-grid,body.page-partner main.panel .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}body.page-customer main.panel .stats-grid>.ride,body.page-driver main.panel .stats-grid>.ride,body.page-partner main.panel .stats-grid>.ride{min-height:78px;padding:12px}body.page-customer main.panel .stats-grid>.ride h2,body.page-driver main.panel .stats-grid>.ride h2,body.page-partner main.panel .stats-grid>.ride h2{font-size:22px}body.page-customer main.panel>section.ride,body.page-driver main.panel>section.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page)>section.ride{padding:15px 13px}body.page-customer main.panel article.ride,body.page-driver main.panel article.ride,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride{padding:14px 13px}body.page-driver main.panel article.ride form,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form{display:grid;grid-template-columns:1fr;align-items:stretch}body.page-driver main.panel article.ride form label,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form label{min-width:0}body.page-driver main.panel article.ride form .btn,body.page-partner main.panel:not(.fleet-dashboard):not(.account-page) article.ride form .btn{width:100%}body.page-admin .admin-console{width:calc(100% - 24px);margin:14px auto 32px;gap:13px}body.page-admin .admin-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}body.page-admin .admin-section-grid{grid-template-columns:1fr;gap:10px}body.page-admin .admin-quick-card{min-height:72px;padding:11px 10px}body.page-admin .admin-category{padding:14px}}
 @media(max-width:390px){body.page-customer main.panel .stats-grid,body.page-driver main.panel .stats-grid,body.page-partner main.panel .stats-grid{grid-template-columns:1fr}body.page-admin .admin-quick-grid{grid-template-columns:1fr}}
+
+/* Phase 16A — guided vehicle setup and clear route selection */
+body.page-partner main.panel{max-width:1240px}
+body.page-partner main.panel section.ride form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;align-items:end}
+body.page-partner main.panel section.ride form>label,
+body.page-partner main.panel section.ride form>input,
+body.page-partner main.panel section.ride form>select,
+body.page-partner main.panel section.ride form>textarea,
+body.page-partner main.panel section.ride form>small,
+body.page-partner main.panel section.ride form>fieldset,
+body.page-partner main.panel section.ride form>details,
+body.page-partner main.panel section.ride form>button{grid-column:1/-1}
+.rental-mode-options{display:flex;flex-wrap:wrap;gap:12px 22px;border:1px solid #dce8ee;border-radius:14px;padding:13px 16px;background:#f8fcfb}
+.rental-mode-options legend{padding:0 6px;font-weight:800;color:#18324b}
+.rental-mode-options label{display:flex!important;align-items:center;gap:8px;margin:0!important}
+.rental-mode-options small{flex-basis:100%;color:#64788d}
+.route-picker{border:1px solid #dbe7ee;border-radius:14px;background:#fbfdfd;padding:12px 14px;min-width:0}
+.route-picker summary{cursor:pointer;font-weight:800;color:#18324b;padding:3px 0}
+.route-choice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px;max-height:230px;overflow:auto;padding:3px}
+.route-choice-grid label{display:flex!important;align-items:center;gap:8px;padding:9px 10px;margin:0!important;border:1px solid #e2ebef;border-radius:10px;background:#fff;font-size:12px;font-weight:650;min-width:0}
+.route-choice-grid label span{overflow-wrap:anywhere}
+.availability-form{display:grid!important;grid-template-columns:minmax(170px,.7fr) minmax(180px,1fr) auto!important;gap:10px!important;align-items:end;background:#f5faf9;border:1px solid #dfede9;border-radius:13px;padding:12px;margin:12px 0}
+.availability-form label{grid-column:1/-1!important;margin:0!important}
+.availability-form button{grid-column:auto!important;white-space:nowrap}
+@media(max-width:760px){body.page-partner main.panel section.ride form{grid-template-columns:1fr}.route-choice-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:210px}.availability-form{grid-template-columns:1fr!important}.availability-form button{grid-column:1!important;width:100%}}
+@media(max-width:420px){.route-choice-grid{grid-template-columns:1fr}}

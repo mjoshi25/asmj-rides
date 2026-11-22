@@ -82,6 +82,15 @@ public class AgentVehicleAuthorizationService {
         return authorizations.save(item);
     }
 
+    public List<Vehicle> findManageableVehicles(String agentId) {
+        List<Vehicle> result=new ArrayList<>();
+        for(AgentVehicleAuthorization authorization:authorizations.findByAgentIdAndStatus(agentId,"APPROVED")) {
+            if(canManage(agentId,authorization.getVehicleId(),"VIEW_LISTING"))
+                vehicles.findById(authorization.getVehicleId()).ifPresent(result::add);
+        }
+        return result;
+    }
+
     public boolean canManage(String agentId, String vehicleId, String permission) {
         if (!ALLOWED_PERMISSIONS.contains(permission)) return false;
         UserAccount agent=users.findById(agentId).orElse(null);
