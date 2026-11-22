@@ -30,7 +30,7 @@ public class VehicleCategory {
     public String getName(){return name;} public void setName(String v){name=v;}
     public String getParentCode(){return parentCode;} public void setParentCode(String v){parentCode=v;}
     public String getDescription(){return description;} public void setDescription(String v){description=v;}
-    public String getServiceType(){return serviceType;} public void setServiceType(String v){serviceType=v;}
+    public String getServiceType(){return serviceType==null||serviceType.isBlank()?"PASSENGER":serviceType;} public void setServiceType(String v){serviceType=v;}
     public int getPassengerCapacity(){return passengerCapacity;} public void setPassengerCapacity(int v){passengerCapacity=Math.max(0,v);}
     public double getMaximumPayloadKg(){return maximumPayloadKg;} public void setMaximumPayloadKg(double v){maximumPayloadKg=Math.max(0,v);}
     public boolean isActive(){return active;} public void setActive(boolean v){active=v;}

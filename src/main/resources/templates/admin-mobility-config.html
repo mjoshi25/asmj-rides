@@ -1,0 +1,97 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mobility configuration · ASMJ Ride</title>
+<link rel="stylesheet" href="/css/app.css?v=phase19-mobility-config">
+<style>
+.mobility-wrap{max-width:1180px;margin:24px auto;padding:0 16px}.mobility-panel{background:#fff;border:1px solid #dce3eb;border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 5px 18px rgba(16,36,61,.05)}.mobility-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.mobility-field{display:flex;flex-direction:column;gap:6px;min-width:0}.mobility-field input,.mobility-field select,.mobility-field textarea{width:100%;min-height:42px;padding:9px 10px;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box}.mobility-check{display:flex;align-items:center;gap:8px;margin:8px 0}.mobility-check input{width:18px;height:18px}.mobility-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}.mobility-table-wrap{overflow-x:auto}.mobility-table{width:100%;border-collapse:collapse;min-width:650px}.mobility-table th,.mobility-table td{text-align:left;padding:10px;border-bottom:1px solid #e2e8f0;vertical-align:top}.mobility-card{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin:12px 0}.mobility-note{color:#475569}.mobility-alert{padding:10px 12px;border-radius:8px;background:#eff6ff;margin:10px 0}.mobility-error{background:#fff1f2;color:#9f1239}.mobility-btn{border:0;border-radius:8px;padding:10px 15px;background:#123b63;color:#fff;font-weight:600;cursor:pointer}.mobility-btn.secondary{background:#475569}.mobility-btn.danger{background:#9f1239}
+</style>
+</head>
+<body>
+<header th:replace="~{fragments/navigation :: authenticatedHeader('ADMIN')}"></header>
+<main class="mobility-wrap">
+<h1>Mobility service configuration</h1>
+<p class="mobility-note">Configure passenger and goods services without changing existing rental marketplace settings. Existing category codes are retained for compatibility.</p>
+<div class="mobility-alert" th:if="${param.categorySaved != null or param.settingsSaved != null or param.citySaved != null}">Configuration saved.</div>
+<div class="mobility-alert mobility-error" th:if="${param.categoryError != null or param.settingsError != null or param.cityError != null}">The submitted values are invalid. Please review the fields and try again.</div>
+<div class="mobility-alert mobility-error" th:if="${param.duplicateCode != null}">That category code is already in use. Choose a unique code.</div>
+
+<section class="mobility-panel">
+<h2>Platform service switches and commission defaults</h2>
+<p class="mobility-note">Launch policies remain CITY coverage, BOTH assignment paths, and CATEGORY commission. Rates are percentages and must be reviewed by Admin before launch.</p>
+<form method="post" action="/admin/mobility-config/settings/save">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+<div class="mobility-grid">
+<label class="mobility-check"><input type="checkbox" name="passengerServiceEnabled" value="true" th:checked="${config.passengerServiceEnabled}"> Enable passenger bookings</label>
+<label class="mobility-check"><input type="checkbox" name="goodsServiceEnabled" value="true" th:checked="${config.goodsServiceEnabled}"> Enable goods bookings</label>
+<label class="mobility-field">Default category commission (%)<input type="number" name="defaultCommission" min="0" max="50" step="0.01" required th:value="${config.defaultCategoryCommissionPercent}"></label>
+</div>
+<h3>Commission by category</h3>
+<div class="mobility-table-wrap"><table class="mobility-table"><thead><tr><th>Category</th><th>Service</th><th>Commission (%)</th></tr></thead><tbody>
+<tr th:each="cat:${categories}"><td th:text="${cat.name}+' ('+${cat.code}+')'"></td><td th:text="${cat.serviceType}"></td><td><input type="number" min="0" max="50" step="0.01" style="max-width:150px" th:name="${'commission_'+cat.code}" th:value="${config.commissionFor(cat.code)}"></td></tr>
+<tr th:if="${#lists.isEmpty(categories)}"><td colspan="3">Create vehicle categories first; then configure their rates here.</td></tr>
+</tbody></table></div>
+<div class="mobility-actions"><button class="mobility-btn" type="submit">Save platform settings</button></div>
+</form>
+</section>
+
+<section class="mobility-panel">
+<h2>Add a vehicle category</h2>
+<form method="post" action="/admin/mobility-config/category/save">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+<div class="mobility-grid">
+<label class="mobility-field">Category code<input name="code" maxlength="40" pattern="[A-Za-z][A-Za-z0-9_]{1,39}" placeholder="MINI_TRUCK" required></label>
+<label class="mobility-field">Display name<input name="name" maxlength="80" required></label>
+<label class="mobility-field">Service type<select name="serviceType" required><option value="PASSENGER">Passenger</option><option value="GOODS">Goods</option><option value="BOTH">Both</option></select></label>
+<label class="mobility-field">Passenger capacity<input type="number" name="passengerCapacity" min="0" max="1000" value="0"></label>
+<label class="mobility-field">Maximum payload (kg)<input type="number" name="maximumPayloadKg" min="0" max="100000" step="0.1" value="0"></label>
+<label class="mobility-field">Display order<input type="number" name="sortOrder" min="0" max="10000" value="100"></label>
+<label class="mobility-field">Description<input name="description" maxlength="500"></label>
+</div>
+<label class="mobility-check"><input type="checkbox" name="active" value="true" checked> Active category</label>
+<div class="mobility-actions"><button class="mobility-btn" type="submit">Create category</button></div>
+</form>
+</section>
+
+<section class="mobility-panel">
+<h2>Existing categories</h2>
+<p class="mobility-note">Category codes are identifiers used by existing rides and fare/payment records. This screen does not offer code renaming or deletion.</p>
+<article class="mobility-card" th:each="cat:${categories}">
+<form method="post" action="/admin/mobility-config/category/save">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><input type="hidden" name="id" th:value="${cat.id}">
+<div class="mobility-grid">
+<label class="mobility-field">Code<input name="code" readonly th:value="${cat.code}"></label>
+<label class="mobility-field">Display name<input name="name" maxlength="80" required th:value="${cat.name}"></label>
+<label class="mobility-field">Service type<select name="serviceType"><option value="PASSENGER" th:selected="${cat.serviceType == 'PASSENGER'}">Passenger</option><option value="GOODS" th:selected="${cat.serviceType == 'GOODS'}">Goods</option><option value="BOTH" th:selected="${cat.serviceType == 'BOTH'}">Both</option></select></label>
+<label class="mobility-field">Passenger capacity<input type="number" name="passengerCapacity" min="0" max="1000" th:value="${cat.passengerCapacity}"></label>
+<label class="mobility-field">Maximum payload (kg)<input type="number" name="maximumPayloadKg" min="0" max="100000" step="0.1" th:value="${cat.maximumPayloadKg}"></label>
+<label class="mobility-field">Display order<input type="number" name="sortOrder" min="0" max="10000" th:value="${cat.sortOrder}"></label>
+<label class="mobility-field">Description<input name="description" maxlength="500" th:value="${cat.description}"></label>
+</div>
+<label class="mobility-check"><input type="checkbox" name="active" value="true" th:checked="${cat.active}"> Active</label>
+<div class="mobility-actions"><button class="mobility-btn" type="submit">Save category</button></div>
+</form>
+<form method="post" th:action="@{'/admin/mobility-config/category/'+${cat.id}+'/toggle'}" class="mobility-actions"><input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><button class="mobility-btn secondary" type="submit" th:text="${cat.active?'Deactivate':'Activate'}"></button></form>
+</article>
+<p th:if="${#lists.isEmpty(categories)}">No categories are configured yet.</p>
+</section>
+
+<section class="mobility-panel">
+<h2>City-specific category availability</h2>
+<p class="mobility-note">For older city records, leaving category restrictions unconfigured preserves the previous behavior (all active categories). Once you save a selection, only checked active categories are enabled in that city. An empty saved selection means no categories are enabled there.</p>
+<article class="mobility-card" th:each="city:${cities}">
+<h3 th:text="${city.city}+' · '+${city.district}+', '+${city.state}"></h3>
+<p th:text="${city.active?'City enabled':'City inactive'}"></p>
+<form method="post" th:action="@{'/admin/mobility-config/city/'+${city.id}+'/categories'}">
+<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+<div class="mobility-grid"><label class="mobility-check" th:each="cat:${categories}" th:if="${cat.active}"><input type="checkbox" name="enabledCategoryCodes" th:value="${cat.code}" th:checked="${city.enabledCategoryCodes != null and #lists.contains(city.enabledCategoryCodes,cat.code)}"><span th:text="${cat.name}+' ('+${cat.code}+')'"></span></label></div>
+<div class="mobility-actions"><button class="mobility-btn" type="submit">Save city categories</button><small th:if="${!city.categorySelectionConfigured}" class="mobility-note">Currently unrestricted by category</small><small th:if="${city.categorySelectionConfigured}" class="mobility-note">Category restrictions configured</small></div>
+</form>
+</article>
+<p th:if="${#lists.isEmpty(cities)}">Add service cities under Locations &amp; routes first.</p>
+</section>
+<p><a href="/admin">← Back to Admin Control Center</a></p>
+</main>
+<script src="/js/app-ui.js?v=phase19-mobility-config" defer></script>
+</body></html>

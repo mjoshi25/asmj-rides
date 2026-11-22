@@ -37,6 +37,12 @@ public class VehicleCategorySeeder implements CommandLineRunner {
 
     private void seed(String code,String name,String parent,String description,int order,List<String> modes){
         if(categories.findByCodeIgnoreCase(code).isPresent()) return;
-        VehicleCategory c=new VehicleCategory();c.setCode(code);c.setName(name);c.setParentCode(parent);c.setDescription(description);c.setSortOrder(order);c.setSupportedRentalModes(modes);c.setActive(true);categories.save(c);
+        VehicleCategory c=new VehicleCategory();c.setCode(code);c.setName(name);c.setParentCode(parent);c.setDescription(description);c.setSortOrder(order);c.setSupportedRentalModes(modes);c.setActive(true);
+        if(List.of("GOODS","HEAVY_COMMERCIAL","PICKUP","TRUCK").contains(code)) c.setServiceType("GOODS");
+        else c.setServiceType("PASSENGER");
+        if(List.of("HATCHBACK","SEDAN","SUV","MUV_MPV","LUXURY").contains(code)) c.setPassengerCapacity(4);
+        if("AUTO".equals(code)) c.setPassengerCapacity(3);
+        if("BIKE".equals(code)||"SCOOTER".equals(code)||"MOTORCYCLE".equals(code)) c.setPassengerCapacity(1);
+        categories.save(c);
     }
 }

@@ -168,3 +168,6 @@ See `README-PHASE-16B-16E.md` and `PHASE-16B-16E-RENTAL-WORKFLOW.md` for custome
 ## Phase 18 – Multi-vehicle mobility architecture
 
 See [PHASE-18-ARCHITECTURE-COMPATIBILITY.md](PHASE-18-ARCHITECTURE-COMPATIBILITY.md) for the confirmed city-by-city rollout, dual dispatch policy, category-based commission design, backward-compatible data additions and migration safeguards.
+
+## Phase 19 — Admin mobility category configuration
+See [PHASE-19-ADMIN-MOBILITY-CATEGORY-CONFIGURATION.md](PHASE-19-ADMIN-MOBILITY-CATEGORY-CONFIGURATION.md) for the Admin category, service switch, commission configuration, city/category availability controls, compatibility notes, and verification checklist.
