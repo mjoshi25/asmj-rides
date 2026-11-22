@@ -157,3 +157,6 @@ The source archive includes the initial marketplace foundation and Phase 2 multi
 
 ## Latest UI release
 Phase 4 adds unified ASMJ Ride branding, SVG logo/favicon assets, responsive login and registration layouts, shared button/form/navigation styling, and password visibility controls. See `PHASE-4-BRANDING-AND-UI-REDESIGN.md` for scope and the manual acceptance checklist. Production deployment remains a separate approval step.
+## Latest UI update – Phase 13
+
+The Admin dashboard now uses a responsive categorized Control Center with quick-access cards, grouped management links, and collapsible partner/agency/vehicle application tables. See `PHASE-13-ADMIN-CONTROL-CENTER.md`.
